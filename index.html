@@ -346,6 +346,8 @@ h2 {
 .post-body p:last-child { margin-bottom: 0; }
 .post.upcoming { opacity: 0.7; border-style: dashed; }
 .question { font-size: 16px; }
+.credit { font-size: 14px; color: var(--muted); font-style: italic; }
+.post-body p.credit { font-size: 14px; border-top: 1px dashed var(--line); padding-top: 10px; }
 .video { display: grid; gap: 6px; max-width: 560px; }
 .video-play, .video iframe {
   position: relative; display: block; width: 100%; aspect-ratio: 16 / 9;
@@ -755,6 +757,7 @@ footer {
             <div class="p-head"><h3>Fair Hire</h3><span class="status wip">In progress</span></div>
             <p class="meta">Create AI Agents competition, Dubai Chamber · Nov 2026 to now</p>
             <p>An AI agent for fairer hiring. It is built around a simple problem: details on a résumé that say nothing about ability, such as the applicant's photo, can still shape who gets shortlisted. Fair Hire began as a class pitch on UN Sustainable Development Goal 5, gender equality, and I'm now building it as a working agent for the competition.</p>
+            <p class="credit">The idea came from a lesson by my teacher, Ms Lois Abigail Harper, and was first pitched with my teammates Aurora Firdaus and Lee Choeun (Eila).</p>
             <div class="pills"><span>AI agent</span><span>Fair hiring</span><span>SDG 5</span></div>
           </article>
           <article class="project">
@@ -781,6 +784,7 @@ footer {
                 <figcaption>Our original competition poster (team section cropped out)</figcaption>
               </figure>
             </details>
+            <p class="credit">Team Tony Stork: Samuel, Jun Lum, Srijith and me, mentored by Ms Nadiah Zainal Abidin.</p>
             <div class="pills"><span>PyTorch</span><span>Computer vision</span><span>Team project</span></div>
           </article>
           <article class="project">
@@ -812,6 +816,7 @@ footer {
                 <figcaption>Our original hackathon poster</figcaption>
               </figure>
             </details>
+            <p class="credit">Built with my teammates Hao Wee, Suen and Afiqah.</p>
             <div class="pills"><span>Gemini</span><span>ElevenLabs</span><span>Concept development</span><span>Presentation</span></div>
           </article>
           <article class="project">
@@ -922,13 +927,60 @@ footer {
                 <p>I didn't want it to stay a slide in a pitch deck. So now I'm building it for real, as an AI agent for the Create AI Agents competition by Dubai Chamber.</p>
                 <p>The hard part isn't hiding a photo. Bias can sneak in through many small signals, and AI can learn bias too if you're not careful. Building something fair means testing it, questioning it, and being honest about what it can't do.</p>
                 <p>I'll write more here as it takes shape.</p>
+                <p class="credit">Thank you to my teammates Aurora Firdaus and Lee Choeun (Eila), who pitched Fair Hire with me, and to my teacher, Ms Lois Abigail Harper, whose lesson sparked the idea and who supported us all the way.</p>
               </div>
             </details>
+          </article>
+          <article class="project post">
+            <p class="meta">November 2026 · 2 min read</p>
+            <h3>Losing NAIC 2025 was the start of my Top 6</h3>
+            <p>In 2025 I entered the National AI Competition, and I lost. A year later my team made the Top 6. This is about the year in between.</p>
+            <details class="brief">
+              <summary>Read the full post</summary>
+              <div class="post-body">
+                <p>Losing NAIC 2025 hurt. I had put real effort in, and it still wasn't enough. I could have taken that as a sign that AI competitions weren't for me.</p>
+                <p>Instead I treated it as unfinished business. NAIC 2026 was going to be my redemption.</p>
+                <p>This time I came back with a team of four, Tony Stork (Samuel, Jun Lum, Srijith and me), and a problem that matters: diabetic retinopathy, a condition where high blood sugar damages the blood vessels in the eye. If it's caught late, it can mean permanent loss of sight. We built a model that grades how severe it is from an image of the retina.</p>
+                <p>My part was cleaning the dataset, research, coding, and running experiments with MaxViT and ConvNeXt models. We combined them into an ensemble that reached 80.4% validation accuracy.</p>
+                <p>We made the Top 6 in the Computing Track, and I received an education bursary with it.</p>
+                <p>The result felt good. But what I'm proudest of is coming back at all. Losing once didn't end anything. It just showed me where I needed to grow.</p>
+                <p class="credit">Thank you to my teammates Samuel, Jun Lum and Srijith, and to our mentor, Ms Nadiah Zainal Abidin, for guiding us through it.</p>
+              </div>
+            </details>
+            <p><a class="link" href="#projects">See the project</a></p>
+          </article>
+          <article class="project post">
+            <p class="meta">November 2026 · 2 min read</p>
+            <h3>The hackathon we didn't know was coming</h3>
+            <p>Our first hackathon ever, and we didn't even know it was coming. Then the judges' questions nearly stumped us.</p>
+            <details class="brief">
+              <summary>Read the full post</summary>
+              <div class="post-body">
+                <p>In 2025 I joined the Xplore AI programme by Hyperbyte.ai expecting workshops and learning. Then, at the end, came the surprise: a hackathon. Build something, and pitch it. My team was Hao Wee, Suen, Afiqah and me.</p>
+                <p>It was our first hackathon ever. Honestly, we had no idea what to do. No plan, no idea, and not much time.</p>
+                <p>So we started from a problem instead of a technology. A lot of young people don't get mental health support. Therapy can be expensive, the waits are long, and it's hard to find someone you trust. Typing your feelings into a general chatbot doesn't feel the same as talking to someone.</p>
+                <p>That became VentPal: an AI you can talk to through a simulated video or audio call. Gemini writes the reply, ElevenLabs gives it a voice, and an avatar says it out loud. It was designed to notice when a problem is serious and point the person to real help.</p>
+                <p>Then came the pitch. The judges asked really hard questions, the kind we hadn't prepared for, and for a moment we were stuck. But we worked through it together and managed to defend our idea.</p>
+                <p>It was only a concept and a prototype, but it taught me two things I still use. You don't need a perfect plan to start: pick a real problem, and build toward it. And when you get a question you can't answer right away, don't panic. Think it through out loud, and defend what you believe in.</p>
+                <p class="credit">Thank you to my teammates Hao Wee, Suen and Afiqah, who figured it out with me.</p>
+              </div>
+            </details>
+            <p><a class="link" href="#projects">See VentPal</a></p>
           </article>
           <article class="project post upcoming">
             <p class="meta">Coming in December 2026</p>
             <h3>Young Founders Summit: a diary from Singapore</h3>
             <p>Six days at the bootcamp in Singapore. What I learn, who I meet, and what I build.</p>
+          </article>
+          <article class="project post upcoming">
+            <p class="meta">Coming soon</p>
+            <h3>Can off-the-shelf detectors catch AI-edited bank statements?</h3>
+            <p>What my MYSSP team is finding out about detecting tampered financial documents.</p>
+          </article>
+          <article class="project post upcoming">
+            <p class="meta">Coming soon</p>
+            <h3>Catching money split across many accounts</h3>
+            <p>My idea for using AI to spot split-transfer fraud and money laundering, so banks can warn victims sooner.</p>
           </article>
         </div>
       </div>
@@ -1467,9 +1519,9 @@ footer {
     { keys: ["ai", "machine learning", "ml", "vision", "computer vision", "deep learning"],
       answer: "Mostly computer vision: classifying images, detecting objects, and segmenting pixels, all in Python and PyTorch.",
       next: ["What's your research?", "How accurate was it?"] },
-    { keys: ["writing", "blog", "post", "posts", "write", "article", "diary"],
-      answer: "I write short notes on what I'm building. The first one is about why I'm building Fair Hire, and a diary from the Young Founders Summit is coming in December.",
-      next: ["What's Fair Hire?", "What's YFS?"],
+    { keys: ["writing", "blog", "post", "posts", "write", "article", "diary", "lost", "lose", "losing", "fail", "failure", "redemption", "comeback"],
+      answer: "I write about what I build and what I learn: why I'm building Fair Hire, coming back from losing NAIC 2025 to make the Top 6, and the surprise hackathon that became VentPal. Posts on MYSSP, my anti-fraud idea, and a YFS diary are coming.",
+      next: ["Any awards?", "What's VentPal?"],
       link: ["#writing", "Read my writing"] },
     { keys: ["resume", "cv"],
       answer: "My resume is on the Resume page. You can download the PDF there too.",
