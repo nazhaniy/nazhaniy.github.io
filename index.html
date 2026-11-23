@@ -30,7 +30,7 @@
   --line: #C3D1CC;
   --accent: #D8432B;
   --creature: #1F6F78;
-  --live: #1E7A46; --wip: #8F5A00;
+  --live: #1E7A46; --wip: #8F5A00; --done: #2F6FB5;
   --face-0: 0.13; --face-1: 0.28; --face-2: 0.5; --face-3: 0.75; --face-4: 1;
   --font-display: "Bricolage Grotesque", "Arial Narrow", "Helvetica Neue", Arial, sans-serif;
   --font-body: "Instrument Sans", "Helvetica Neue", Arial, sans-serif;
@@ -46,7 +46,7 @@
     --line: #264248;
     --accent: #FF6A4D;
     --creature: #5FC4C9;
-    --live: #5FD08F; --wip: #E7B45A;
+    --live: #5FD08F; --wip: #E7B45A; --done: #7FB2FF;
     --face-0: 0.14; --face-1: 1; --face-2: 0.78; --face-3: 0.5; --face-4: 0.26;
     color-scheme: dark;
   }
@@ -59,7 +59,7 @@
   --line: #264248;
   --accent: #FF6A4D;
   --creature: #5FC4C9;
-  --live: #5FD08F; --wip: #E7B45A;
+  --live: #5FD08F; --wip: #E7B45A; --done: #7FB2FF;
   --face-0: 0.14; --face-1: 1; --face-2: 0.78; --face-3: 0.5; --face-4: 0.26;
   color-scheme: dark;
 }
@@ -316,6 +316,21 @@ h2 {
 .status::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
 .status.live { color: var(--live); }
 .status.wip { color: var(--wip); }
+.status.done { color: var(--done); }
+/* Status badges glow softly; the dot breathes */
+.status { box-shadow: 0 0 0 0 currentColor; animation: badgeglow 2.4s ease-in-out infinite; }
+.status::before { box-shadow: 0 0 6px 1px currentColor; animation: dotglow 2.4s ease-in-out infinite; }
+.status.wip { animation-duration: 1.6s; }
+.status.wip::before { animation-duration: 1.6s; }
+@keyframes badgeglow {
+  0%, 100% { box-shadow: 0 0 2px 0 color-mix(in srgb, currentColor 35%, transparent), inset 0 0 4px 0 color-mix(in srgb, currentColor 15%, transparent); }
+  50% { box-shadow: 0 0 14px 2px color-mix(in srgb, currentColor 55%, transparent), inset 0 0 8px 0 color-mix(in srgb, currentColor 25%, transparent); }
+}
+@keyframes dotglow {
+  0%, 100% { opacity: 0.7; transform: scale(0.85); }
+  50% { opacity: 1; transform: scale(1.15); }
+}
+@media (prefers-reduced-motion: reduce) { .status, .status::before { animation: none; } }
 .project p { color: var(--muted); }
 .shot { margin: 4px 0 0; display: grid; gap: 6px; max-width: 340px; }
 .shot .flow { display: block; width: 100%; height: auto; color: var(--ink); font-family: var(--font-body); }
@@ -339,12 +354,96 @@ h2 {
 }
 .brief dd { margin: 0; font-size: 15px; line-height: 1.5; color: var(--ink); }
 @media (min-width: 720px) { .brief dl { grid-template-columns: 1fr 1fr; } }
+.story { margin: 56px 0 8px; display: grid; gap: 16px; }
+.story h2 { margin: 0; }
+/* Timeline: a vertical line on phones, a horizontal track on wide screens.
+   The line draws itself and the dots light up one by one when it scrolls into view. */
+.story-steps {
+  --track: var(--line);
+  list-style: none; margin: 0; padding: 0 0 0 26px; position: relative;
+  display: grid; gap: 22px;
+}
+.story-steps::before, .story-steps::after {
+  content: ""; position: absolute; left: 6px; top: 8px; bottom: 8px; width: 2px;
+  background: var(--track); border-radius: 2px;
+}
+.story-steps::after {
+  background: var(--accent); transform-origin: top; transform: scaleY(0);
+  transition: transform 1.4s cubic-bezier(.2,.7,.2,1);
+}
+.story-steps.drawn::after { transform: scaleY(1); }
+.story-steps li { position: relative; display: grid; gap: 6px; align-content: start; opacity: .25; transform: translateY(6px);
+  transition: opacity .5s ease, transform .5s ease; transition-delay: calc(var(--i) * 0.2s); }
+.story-steps.drawn li { opacity: 1; transform: none; }
+.story-steps .dot {
+  position: absolute; left: -26px; top: 6px; width: 14px; height: 14px; border-radius: 50%;
+  background: var(--bg); border: 2px solid var(--accent); box-sizing: border-box;
+}
+.story-steps .when {
+  margin: 0; font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800;
+  font-size: 30px; line-height: 1; color: var(--ink); letter-spacing: -0.01em;
+}
+.story-steps .when small {
+  font-family: 'DM Mono', monospace; font-weight: 500; font-size: 12px; letter-spacing: .12em;
+  text-transform: uppercase; color: var(--accent); vertical-align: 0.55em; margin-right: 2px;
+}
+.story-steps .what { margin: 0; font-size: 15px; line-height: 1.45; color: var(--muted); max-width: 30ch; }
+.story-steps .now .dot { background: var(--accent); }
+.story-steps .now .dot::after {
+  content: ""; position: absolute; inset: -6px; border-radius: 50%; border: 2px solid var(--accent);
+  animation: nowpulse 1.8s ease-out infinite;
+}
+.story-steps .now .when { color: var(--accent); }
+@keyframes nowpulse { from { transform: scale(.6); opacity: .9; } to { transform: scale(1.6); opacity: 0; } }
+@media (min-width: 860px) {
+  .story-steps { padding: 30px 0 0; grid-template-columns: repeat(6, 1fr); gap: 16px; }
+  .story-steps::before, .story-steps::after { left: 7px; right: 7px; top: 6px; bottom: auto; width: auto; height: 2px; }
+  .story-steps::after { transform-origin: left; transform: scaleX(0); }
+  .story-steps.drawn::after { transform: scaleX(1); }
+  .story-steps .dot { left: 0; top: -30px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .story-steps::after, .story-steps li { transition: none; }
+  .story-steps .now .dot::after { animation: none; }
+}
+.story-body { display: grid; gap: 16px; min-width: 0; }
+.story-body > .link { justify-self: start; }
+.filters { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 18px; }
+.filters .chip[aria-pressed="true"] { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+.filters .chip span { opacity: .6; margin-left: 4px; }
+.post .tag {
+  display: inline-block; margin-left: 6px; padding: 1px 8px; border-radius: 999px;
+  border: 1px solid var(--line); font-size: 11px; color: var(--accent); vertical-align: 1px;
+}
+.post.hide, .project.hide { display: none; }
+.ocean { position: fixed; inset: 0; z-index: 60; pointer-events: none; display: block; }
+.ocean.on { pointer-events: auto; cursor: pointer; }
+.ocean-hint {
+  position: fixed; left: 50%; bottom: 22px; transform: translateX(-50%); z-index: 61;
+  font-family: 'DM Mono', monospace; font-size: 12px; letter-spacing: .1em; text-transform: uppercase;
+  color: #e6f6ff; opacity: 0; transition: opacity .4s; pointer-events: none;
+}
 .lede-small { margin: 0 0 18px; color: var(--muted); font-size: 17px; line-height: 1.5; }
 .post h3 { margin: 4px 0 8px; }
 .post-body { padding: 4px 14px 14px; }
 .post-body p { margin: 0 0 12px; font-size: 16px; line-height: 1.6; }
 .post-body p:last-child { margin-bottom: 0; }
-.post.upcoming { opacity: 0.7; border-style: dashed; }
+/* Coming-soon posts: wrapped in yellow-and-black caution tape */
+.post.upcoming {
+  position: relative; overflow: hidden; border-style: dashed;
+  padding-top: 52px;
+}
+.post.upcoming > * { opacity: 0.72; }
+.post.upcoming::before {
+  content: ""; position: absolute; left: -10%; right: -10%; top: 14px; height: 26px;
+  background: repeating-linear-gradient(-45deg, #FFD21F 0 16px, #111 16px 32px);
+  transform: rotate(-2.5deg); box-shadow: 0 2px 6px rgba(0,0,0,0.25);
+}
+.post.upcoming::after {
+  content: "COMING SOON"; position: absolute; left: 50%; top: 17px; transform: translateX(-50%) rotate(-2.5deg);
+  background: #FFD21F; color: #111; font-family: var(--font-mono); font-weight: 600; font-size: 11px;
+  letter-spacing: 0.18em; padding: 3px 12px; border: 2px solid #111;
+}
 .question { font-size: 16px; }
 .credit { font-size: 14px; color: var(--muted); font-style: italic; }
 .post-body p.credit { font-size: 14px; border-top: 1px dashed var(--line); padding-top: 10px; }
@@ -693,6 +792,20 @@ footer {
         </div>
       </div>
     </div>
+    <section class="story" aria-labelledby="story-title">
+      <h2 id="story-title">How I got here</h2>
+      <div class="story-body">
+      <ol class="story-steps">
+        <li><i class="dot" aria-hidden="true"></i><p class="when"><small>Age</small> 12</p><p class="what">GMI camp: robotic hands, EVs, then Arduino</p></li>
+        <li><i class="dot" aria-hidden="true"></i><p class="when"><small>Age</small> 13</p><p class="what">First code and website, in lockdown</p></li>
+        <li><i class="dot" aria-hidden="true"></i><p class="when"><small>Age</small> 14</p><p class="what">Learned Python, thanks to my sister</p></li>
+        <li><i class="dot" aria-hidden="true"></i><p class="when"><small>Age</small> 15</p><p class="what">Built a bin that opens its own lid</p></li>
+        <li><i class="dot" aria-hidden="true"></i><p class="when"><small>Age</small> 19</p><p class="what">First AI model at Xplore AI</p></li>
+        <li class="now"><i class="dot" aria-hidden="true"></i><p class="when">Now</p><p class="what">NAIC Top 6, MYSSP, Fair Hire, YFS</p></li>
+      </ol>
+      <a class="link" href="#how-i-got-into-ai">Read the full story</a>
+      </div>
+    </section>
     </div>
 
     <div class="view" data-view="about">
@@ -702,6 +815,7 @@ footer {
         <p>I'm Muhammad Nazhan, a student in the Canadian International Matriculation Programme at Sunway College. I like finding out how technology works and how it can be used outside the classroom.</p>
         <p>AI competitions and research projects have taken me into computer vision, machine learning, and the mess of real-world data. I'm just as interested in economics and public policy, and in how AI will change markets, businesses, and governments.</p>
         <p>Outside class I train in three combat sports.</p>
+        <p><a class="link" href="#how-i-got-into-ai">Read how I got into AI, starting with a robotics camp at 12</a></p>
       </div>
     </section>
 
@@ -738,8 +852,17 @@ footer {
     <section id="projects">
       <h2>Projects</h2>
       <div class="body">
+        <div class="filters" role="group" aria-label="Filter projects" data-for="#projects .project">
+          <button class="chip" type="button" data-filter="all" aria-pressed="true">All</button>
+          <button class="chip" type="button" data-filter="ai" aria-pressed="false">AI</button>
+          <button class="chip" type="button" data-filter="competitions" aria-pressed="false">Competitions</button>
+          <button class="chip" type="button" data-filter="research" aria-pressed="false">Research</button>
+          <button class="chip" type="button" data-filter="social" aria-pressed="false">Social good</button>
+          <button class="chip" type="button" data-filter="now" aria-pressed="false">In progress</button>
+          <button class="chip" type="button" data-filter="web" aria-pressed="false">Web</button>
+        </div>
         <div class="projects">
-          <article class="project">
+          <article class="project" data-tags="ai research now">
             <div class="p-head"><h3>Detecting Tampering in Financial Documents</h3><span class="status wip">In progress</span></div>
             <p class="meta">Malaysia Science Scholars Programme 2026 · Project A-4 · Sep 2026 to now</p>
             <p>A team research project on finding where a financial document has been edited, from building synthetic data to setting detection benchmarks. We are mentored by a PhD researcher from the National University of Singapore. I'm exploring image forensics techniques and experimenting with U-Net segmentation to outline the manipulated regions.</p>
@@ -753,17 +876,17 @@ footer {
             </div>
             <div class="pills"><span>Computer vision</span><span>Python</span><span>Image segmentation</span><span>Research</span></div>
           </article>
-          <article class="project">
+          <article class="project" data-tags="ai social now">
             <div class="p-head"><h3>Fair Hire</h3><span class="status wip">In progress</span></div>
             <p class="meta">Create AI Agents competition, Dubai Chamber · Nov 2026 to now</p>
             <p>An AI agent for fairer hiring. It is built around a simple problem: details on a résumé that say nothing about ability, such as the applicant's photo, can still shape who gets shortlisted. Fair Hire began as a class pitch on UN Sustainable Development Goal 5, gender equality, and I'm now building it as a working agent for the competition.</p>
             <p class="credit">The idea came from a lesson by my teacher, Ms Lois Abigail Harper, and was first pitched with my teammates Aurora Firdaus and Lee Choeun (Eila).</p>
             <div class="pills"><span>AI agent</span><span>Fair hiring</span><span>SDG 5</span></div>
           </article>
-          <article class="project">
+          <article class="project" data-tags="ai competitions social">
             <div class="p-head"><h3>Diabetic Retinopathy Classification</h3><span class="status done">Completed</span></div>
             <p class="meta">National AI Competition 2026 · Top 6 finalist, Computing Track · Mar to Jun 2026</p>
-            <p>A deep learning system that grades the severity of diabetic retinopathy from retinal images, built by our four-member team, Tony Stork. I worked on dataset cleaning, research, coding, and experiments with MaxViT and ConvNeXt models. Our ensemble reached 80.4% validation accuracy.</p>
+            <p>A deep learning system that grades the severity of diabetic retinopathy from retinal images, built by our four-member team, Tony Stork. Our ensemble of MaxViT and ConvNeXt models reached 80.4% validation accuracy.</p>
             <figure class="shot">
               <svg class="flow" viewBox="0 0 360 336" role="img" aria-label="Diagram of the model. A retinal image is preprocessed with a Ben Graham filter and resized, then passed to several MaxViT and ConvNeXt models. Their predictions are combined by majority vote into one severity grade with a confidence score." fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"><defs><marker id="dr-arrow" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L8 4 L0 8 z" fill="currentColor" stroke="none"/></marker></defs><polygon points="110.0,6 260.0,6 250.0,42 100.0,42"/><text x="180" text-anchor="middle" font-size="12" fill="currentColor" stroke="none"><tspan x="180" y="28.0">Retinal image</tspan></text><polyline points="180,42 180,60" marker-end="url(#dr-arrow)"/><rect x="80.0" y="62" width="200" height="46" rx="6"/><text x="180" text-anchor="middle" font-size="12" fill="currentColor" stroke="none"><tspan x="180" y="81.5">Preprocessing</tspan><tspan x="180" y="96.5">Ben Graham filter, resize</tspan></text><polyline points="180,108 180,124 92,124 92,140" marker-end="url(#dr-arrow)"/><polyline points="180,124 268,124 268,140" marker-end="url(#dr-arrow)"/><rect x="18.0" y="142" width="148" height="46" rx="6"/><text x="92" text-anchor="middle" font-size="12" fill="currentColor" stroke="none"><tspan x="92" y="161.5">MaxViT</tspan><tspan x="92" y="176.5">models</tspan></text><rect x="194.0" y="142" width="148" height="46" rx="6"/><text x="268" text-anchor="middle" font-size="12" fill="currentColor" stroke="none"><tspan x="268" y="161.5">ConvNeXt</tspan><tspan x="268" y="176.5">models</tspan></text><polyline points="92,188 92,204 180,204 180,220" marker-end="url(#dr-arrow)"/><polyline points="268,188 268,204 180,204"/><rect x="100.0" y="222" width="160" height="38" rx="6"/><text x="180" text-anchor="middle" font-size="12" fill="currentColor" stroke="none"><tspan x="180" y="245.0">Majority vote</tspan></text><polyline points="180,260 180,278" marker-end="url(#dr-arrow)"/><polygon points="105.0,280 265.0,280 255.0,326 95.0,326"/><text x="180" text-anchor="middle" font-size="12" fill="currentColor" stroke="none"><tspan x="180" y="299.5">Severity grade</tspan><tspan x="180" y="314.5">and confidence</tspan></text></svg>
               <figcaption>How the ensemble reaches a prediction, redrawn from our poster</figcaption>
@@ -787,7 +910,7 @@ footer {
             <p class="credit">Team Tony Stork: Samuel, Jun Lum, Srijith and me. Mentored by Ms Nadiah Zainal Abidin, with guidance from Mohith and Ian.</p>
             <div class="pills"><span>PyTorch</span><span>Computer vision</span><span>Team project</span></div>
           </article>
-          <article class="project">
+          <article class="project" data-tags="ai competitions social">
             <div class="p-head"><h3>FoodSaver</h3><span class="status done">Prototype</span></div>
             <p class="meta">National AI Competition 2025 · AI Innovation Track · Team 404 Brain Not Found</p>
             <p>An app to stop good food from being thrown away. Malaysians waste thousands of tonnes of food every day, much of it bought too much and then forgotten. FoodSaver tracks the expiry date of everything you store and reminds you before it expires. You add food by scanning barcodes, which helps large families who buy a lot at once. It also uses AI to suggest a recipe from what's already in your fridge, so leftovers become a meal. Built around UN Sustainable Development Goals 1 and 2, No Poverty and Zero Hunger.</p>
@@ -796,7 +919,7 @@ footer {
             <p><a class="link" href="https://app.uizard.io/p/a9cbe1a6/preview" target="_blank" rel="noopener">Try the app prototype</a> · <a class="link" href="#writing">Read the story</a></p>
             <div class="pills"><span>AI recipes</span><span>Barcode scanning</span><span>Food waste</span><span>SDG 1 and 2</span></div>
           </article>
-          <article class="project">
+          <article class="project" data-tags="competitions social">
             <div class="p-head"><h3>Plastic Never Sleeps!</h3><span class="status done">Completed</span></div>
             <p class="meta">Sustainnovation Innovation Contest · Team Marlin's Mission · 2025</p>
             <p>A pitch on ocean plastic pollution. Around 20 million tonnes of plastic enter the environment every year, and less than 20% of plastic is recycled. We proposed ways to reduce it (beach cleanups and eco-friendly choices), reuse it (plastic-bottle drip irrigation, solar pavements made from plastic waste), and replace it (seaweed packaging, and leather-like material made from shrimp shells).</p>
@@ -804,13 +927,13 @@ footer {
             <p><a class="link" href="https://canva.link/gh0h5xus86b3c7t" target="_blank" rel="noopener">See our slides</a> · <a class="link" href="#writing">Read the story</a></p>
             <div class="pills"><span>Sustainability</span><span>Ocean plastic</span><span>Pitch</span></div>
           </article>
-          <article class="project">
+          <article class="project" data-tags="ai">
             <div class="p-head"><h3>Autonomous Driving Object Detection</h3><span class="status done">Completed</span></div>
             <p class="meta">Hyperbyte.ai AI Bootcamp · 2025</p>
             <p>A computer vision project inspired by self-driving systems. It detects road hazards and obstacles in images.</p>
             <div class="pills"><span>Object detection</span><span>Computer vision</span></div>
           </article>
-          <article class="project">
+          <article class="project" data-tags="ai competitions social">
             <div class="p-head"><h3>VentPal</h3><span class="status done">Prototype</span></div>
             <p class="meta">Xplore AI Hackathon, Hyperbyte.ai · 2025</p>
             <p>A conversational AI concept from a two-day hackathon: an affordable way for young people to talk through their problems, by simulated video or audio call. Gemini writes each reply, ElevenLabs turns it into speech, and an avatar speaks it. I worked on the idea, the feature plan, and presenting it.</p>
@@ -836,7 +959,7 @@ footer {
             <p class="credit">Built with my teammates Hao Wee, Suen and Afiqah.</p>
             <div class="pills"><span>Gemini</span><span>ElevenLabs</span><span>Concept development</span><span>Presentation</span></div>
           </article>
-          <article class="project">
+          <article class="project" data-tags="web">
             <div class="p-head"><h3>This site</h3><span class="status live">Live</span></div>
             <p class="meta">Personal project</p>
             <p>One HTML file. The background creatures and my portrait are grids of text characters drawn on a canvas many times a second.</p>
@@ -898,6 +1021,12 @@ footer {
             <div class="pills"><span>Boxing</span><span>BJJ</span><span>Muay Thai</span></div>
           </li>
           <li>
+            <h3>Scuba diving</h3>
+            <p>I'm a scuba diver, certified in cavern diving and nitrox at Sipadan, where I lived on the Seaventures Dive Rig in the middle of the sea. Under the water it's just you, your breathing, and the fish. Kind of like the ones swimming behind this page.</p>
+            <p><a class="link" href="#where-silence-breathes">Read about my cave dive in Sipadan</a></p>
+            <div class="pills"><span>Cavern diving</span><span>Nitrox</span><span>Sipadan</span></div>
+          </li>
+          <li>
             <h3>Languages</h3>
             <p>I speak English and Malay.</p>
             <div class="pills"><span>English</span><span>Malay</span></div>
@@ -931,9 +1060,57 @@ footer {
       <h2>Writing</h2>
       <div class="body">
         <p class="lede-small">Notes on what I'm building and learning, mostly where AI meets people, money and policy.</p>
+        <div class="filters" role="group" aria-label="Filter posts" data-for="#writing .post">
+          <button class="chip" type="button" data-filter="all" aria-pressed="true">All</button>
+          <button class="chip" type="button" data-filter="personal" aria-pressed="false">Personal</button>
+          <button class="chip" type="button" data-filter="ai" aria-pressed="false">AI</button>
+          <button class="chip" type="button" data-filter="competitions" aria-pressed="false">Competitions</button>
+        </div>
         <div class="projects">
-          <article class="project post">
-            <p class="meta">November 2026 · 2 min read</p>
+          <article data-tags="personal ai" class="project post" id="how-i-got-into-ai">
+            <p class="meta">November 2026 · 3 min read · Start here <span class="tag">Personal</span> <span class="tag">AI</span></p>
+            <h3>How a holiday camp at 12 led me to AI</h3>
+            <p>I didn't start with AI. I started with wires, a soldering iron, and a school holiday my mum didn't want me to waste.</p>
+            <details class="brief">
+              <summary>Read the full post</summary>
+              <div class="post-body">
+                <p>When I was 12, my mum sent me to a robotics and electronics camp at the German-Malaysian Institute (GMI) during the school holidays, together with my neighbours. We got to play with a robotic hand and explore electric cars, back when almost nobody in Malaysia had even seen an EV. That was the first time I saw that you could make things move and react just by connecting the right parts.</p>
+                <p>After the camp, I bought my own Arduino and started building my own little projects. I honestly don't remember what they were anymore, but I remember how it felt to make something work.</p>
+                <p>Then COVID hit, and Malaysia went into the Movement Control Order. At 13, stuck at home, I wrote my first code and built my first website, using Swift. I loved it. (That website is lost forever now.) At 14, still in lockdown, my sister told me to learn Python. Best advice she's ever given me.</p>
+                <p>At 15, for my final project in the IB Middle Years Programme, I built an automatic rubbish bin that opens its lid by itself. It became a hit in my batch, and my teacher showcased it to all the juniors. That was the first time something I built was shown to other people.</p>
+                <p>At 19, in college, AI still wasn't part of my life. Most of us barely used it. Then the Hyperbyte.ai team came to Sunway College for Xplore AI, with Kai Song, Jay Lim and Zad Chin teaching us. That's where I trained my first object detection model, and where a surprise hackathon turned into VentPal.</p>
+                <p>Then I lost NAIC 2025. And honestly, I thought about quitting AI and putting it all behind me. It felt like it wasn't my thing.</p>
+                <p>But I didn't want to waste the skills I'd spent years building, all the way back to that camp at 12. So I kept going: NAIC 2026, where my team made the Top 6, then MYSSP, Fair Hire for Dubai Chamber, and now the Young Founders Summit.</p>
+                <p>Along the way, I started studying economics, and it opened my mind. I began to see how many problems in the world still haven't been solved: poverty, inequality, fraud, waste. That's why I care about where AI meets economics and public policy. I don't just want to build cool things anymore. I want to build things that help solve those problems.</p>
+                <p class="credit">Thank you to my mum for that first camp, to my sister for telling me to learn Python, and to Kai Song, Jay Lim and Zad Chin for my first real steps in AI.</p>
+              </div>
+            </details>
+          </article>
+          <article data-tags="personal" class="project post" id="where-silence-breathes">
+            <p class="meta">Sipadan, Sabah · 6 min read <span class="tag">Personal</span></p>
+            <h3>Where Silence Breathes</h3>
+            <p>My instructor tore the mask from my face without any warning. Thirteen meters down, inside a flooded cave, in total darkness. This is the story of my cavern training at Sipadan.</p>
+            <details class="brief">
+              <summary>Read the full story</summary>
+              <div class="post-body">
+                <p>My instructor tore the mask from my face without any warning. Salt water flooded into my eyes as darkness surrounded me. Instinctively, I reached forward, searching for the guideline laid inside the cave, while my flashlight carved a weak beam through the flooded dark ahead. My breathing grew louder than my thoughts. Inhale slowly, exhale slowly, one breath at a time. I was somewhere inside the Turtle Tomb Cave, more than thirteen meters from the surface, where panic could become fatal.</p>
+                <p>The cave was unlike any darkness I had known before. It was not the darkness of night, nor the darkness of shutting your eyes tight, covering them with both hands and pulling a blanket over your head. It was a darkness so complete that you lose your sense of direction, distance and even time itself. The only other light came from my dive computer and my glow-in-the-dark SPG, which didn't help at all. The cave began with a wide entrance, where faint traces of natural light streamed through the water. But the deeper we swam, the narrower the chambers became. Sharp rocks closed around us while silt drifted through the water like flies, threatening to drop our visibility to zero. Every moment had to stay controlled. A single careless mistake could damage equipment, waste air or trap a diver in the confined passageways.</p>
+                <p>On our way out, my SPG got caught in a sharp, V-shaped rock, and I had to move backwards to free myself. It took quite some time, and I kept worrying about my instructor's air and my own, since we had been inside for about an hour. After I finally untangled it, I zoned out for a while, staring at the entrance, when a large red fish with glowing red eyes suddenly appeared in my flashlight beam. It startled me so much that my regulator almost slipped from my mouth. I thought nothing lived inside the cave. Despite the stress, I forced myself to slow down. Inside a cave, panic only makes everything worse. Around me, there was no sound except our breathing, bubbles escaping upward, and the faint clicking of metal equipment against stone.</p>
+                <p>Only a few days earlier, I had arrived at Sipadan to complete my cavern diving and nitrox certifications. I stayed at the Seaventures Dive Rig, the world's first dive rig in the middle of the ocean. Unlike ordinary dive centres on beaches or private islands, Seaventures felt cut off from the rest of the world. Supplies, luggage and even visitors were lifted up on a large wooden platform suspended above the sea. Parts of the structure had no proper safety railings, so one careless step could send someone falling 8 meters into the ocean below, and you had to bring your passport just in case a strong current swept you to Indonesia or the Philippines. The rig itself looked like a floating metal city stranded in endless water.</p>
+                <p>Life there quickly settled into a strange rhythm. Every morning, I woke up to the sound of waves crashing against the pillars beneath my room while sunlight reflected across the clear blue water. Fish could easily be seen from the surface, swimming around the rig as if they never slept. Every day, brief generator blackouts swallowed the rig in darkness before the lights slowly returned. At night there was only the howling wind, the crashing waves, scattered stars above us and endless sea in every direction. Removed from traffic, crowded streets and daily routines, my time on the rig slowly stopped feeling real.</p>
+                <p>My first dive began shortly after I arrived. After the equipment check and lunch, we descended into the water below the rig for an evaluation dive. Even before reaching Sipadan, the ocean already felt different from anywhere I had dived before. Then came The Drop Off, a world-renowned wall dive just meters from the shore that plunges over 600 meters until it disappears into darkness. Looking into those depths filled me with awe and fear. Part of me jokingly imagined a megalodon hiding somewhere below, waiting for the right moment to have us for breakfast. That's why I stayed close to the reef wall on certain dives. If anything came up from beneath us, I figured my friends would probably get eaten first, giving me enough time to escape.</p>
+                <p>Despite those thoughts, Sipadan was breathtaking. Looking around felt like staring into another world entirely. Schools of barracuda twisted around us like a silver tornado, and a shiver of sharks moved silently past. Sea turtles drifted calmly through the current, including one carrying a visible tumour on its body. Moray eels hid inside the coral, and one almost attacked me, while stingrays glided silently across the sand. At one point, a pufferfish suddenly inflated itself into a floating ball, and everyone laughed through their regulators. Sipadan kept shifting between beauty and danger. One moment felt peaceful, and the next reminded me how fragile humans truly are beneath the ocean.</p>
+                <p>Yet despite the danger, the friendships became one of the most unforgettable parts of the experience. Although we came from different backgrounds and countries, the divers on the rig quickly became family, and so did the staff. The chefs became like mothers to me, asking which dishes I wanted for dinner. Underwater, we constantly checked on one another, especially in strong currents. But once we surfaced, everything turned back into jokes and laughter. Most evenings ended with stories, gossip and teasing around the dinner table. Strangers quickly became a temporary family, and as the youngest diver on the rig at the time, I felt truly loved.</p>
+                <p>Still, nothing compared to the pressure of cavern training. It was the most technical and mentally exhausting diving I had ever done. Unlike open water, there is no direct path to the surface in an emergency, and every movement inside the cave matters. My instructor constantly simulated the worst possible emergencies to prepare me. Sometimes he flooded my mask completely, or blindfolded me, forcing me to navigate in total darkness using only touch. We also practised broken torches, running out of air and zero visibility. On our first cave dive, our main line became tangled, which is a bad sign, and we wasted valuable time and air struggling to free it. At the same time, my instructor's regulator began malfunctioning, releasing white, cloudy bursts of air. I still remember staring blankly at him like a five-year-old who had made a mistake, trying to understand what was happening while silently trusting him to stay calm.</p>
+                <p>The deeper we travelled into the cave, the quieter everything became. No engines, no voices, no distractions. Only our breathing. On my earlier dives, my heart rate stayed above one hundred beats per minute from stress and adrenaline. But over time, the darkness that once terrified me began to feel strangely peaceful. My breathing slowed. My heartbeat dropped closer to its normal resting rate. Somewhere inside the flooded cave, surrounded by silence and darkness, I discovered a calmness I couldn't find anywhere else.</p>
+                <p>Ironically, some of the funniest moments came right after the most stressful dives. At dinner, my instructor dramatically complained about his regulator incident to another divemaster while everyone sat around the table. The divemaster laughed and said my training dive had suddenly turned into a rescue mission. Then I joked that if my instructor had died inside the Turtle Tomb Cave, I would have laid him beside the turtle skeletons and renamed it "Chye Tomb Cave". The whole table burst into such hysterical laughter that we were all crying. Sitting in the middle of the ocean, surrounded by darkness, joking about death after a dangerous dive somehow felt normal. Divers understand fear differently, and humour becomes part of how we survive.</p>
+                <p>Even life outside the dives felt disconnected from reality. The internet signal on the rig was extremely weak, and after I had disappeared underwater for long stretches, my mother panicked and called the dive centre because I hadn't replied to her messages. While she imagined the worst happening somewhere beneath the sea, I was underwater, laughing with other divers and singing Christmas songs. The outside world slowly faded away.</p>
+                <p>Long after leaving Sipadan, I still remember every incident, every story and every bit of gossip we shared, especially the laughter around the dinner table. I remember every morning boat ride, all of us struggling to keep our eyes open. Most of all, I remember the silence. The Turtle Tomb Cave is filled with the remains of animals that were trapped inside, a reminder of how unforgiving nature can be. It taught me that darkness does not always mean defeat. As long as the will to survive remains, you can keep moving forward. Fear and peace can exist in the same place, and sometimes the quietest places reveal the clearest parts of ourselves. Beneath the ocean, I found a kind of peace I couldn't find anywhere else.</p>
+              </div>
+            </details>
+          </article>
+          <article id="fair-hire-post" data-tags="ai" class="project post">
+            <p class="meta">November 2026 · 2 min read <span class="tag">AI</span></p>
             <h3>Why I'm building Fair Hire</h3>
             <p>A teacher once told our class something I couldn't stop thinking about: one reason women and men are treated unequally at work starts before the interview, with the photo on a résumé.</p>
             <details class="brief">
@@ -948,8 +1125,8 @@ footer {
               </div>
             </details>
           </article>
-          <article class="project post">
-            <p class="meta">November 2026 · 2 min read</p>
+          <article id="naic-post" data-tags="ai competitions" class="project post">
+            <p class="meta">November 2026 · 2 min read <span class="tag">AI</span> <span class="tag">Competitions</span></p>
             <h3>Losing NAIC 2025 was the start of my Top 6</h3>
             <p>In 2025 I entered the National AI Competition, and I lost. A year later my team made the Top 6. This is about the year in between.</p>
             <details class="brief">
@@ -967,8 +1144,8 @@ footer {
             </details>
             <p><a class="link" href="#projects">See the project</a></p>
           </article>
-          <article class="project post">
-            <p class="meta">November 2026 · 2 min read</p>
+          <article id="ventpal-post" data-tags="ai competitions" class="project post">
+            <p class="meta">November 2026 · 2 min read <span class="tag">AI</span> <span class="tag">Competitions</span></p>
             <h3>The hackathon we didn't know was coming</h3>
             <p>Our first hackathon ever, and we didn't even know it was coming. Then the judges' questions nearly stumped us.</p>
             <details class="brief">
@@ -985,8 +1162,8 @@ footer {
             </details>
             <p><a class="link" href="#projects">See VentPal</a></p>
           </article>
-          <article class="project post">
-            <p class="meta">November 2026 · 2 min read</p>
+          <article id="plastic-post" data-tags="competitions personal" class="project post">
+            <p class="meta">November 2026 · 2 min read <span class="tag">Competitions</span> <span class="tag">Personal</span></p>
             <h3>The contest we didn't want to join</h3>
             <p>We were basically forced into the Sustainnovation Innovation Contest. We didn't win. It's still one of my favourite memories.</p>
             <details class="brief">
@@ -1002,18 +1179,18 @@ footer {
             </details>
             <p><a class="link" href="#projects">See the project</a></p>
           </article>
-          <article class="project post upcoming">
-            <p class="meta">Coming in December 2026</p>
+          <article data-tags="personal" class="project post upcoming">
+            <p class="meta">Coming in December 2026 <span class="tag">Personal</span></p>
             <h3>Young Founders Summit: a diary from Singapore</h3>
             <p>Six days at the bootcamp in Singapore. What I learn, who I meet, and what I build.</p>
           </article>
-          <article class="project post upcoming">
-            <p class="meta">Coming soon</p>
+          <article data-tags="ai" class="project post upcoming">
+            <p class="meta">Coming soon <span class="tag">AI</span></p>
             <h3>Can off-the-shelf detectors catch AI-edited bank statements?</h3>
             <p>What my MYSSP team is finding out about detecting tampered financial documents.</p>
           </article>
-          <article class="project post upcoming">
-            <p class="meta">Coming soon</p>
+          <article data-tags="ai" class="project post upcoming">
+            <p class="meta">Coming soon <span class="tag">AI</span></p>
             <h3>Catching money split across many accounts</h3>
             <p>My idea for using AI to spot split-transfer fraud and money laundering, so banks can warn victims sooner.</p>
           </article>
@@ -1435,7 +1612,11 @@ footer {
         else a.removeAttribute("aria-current");
       });
     }
-    if (spot) spot.scrollIntoView();
+    if (spot) {
+      var story = spot.querySelector("details");     // links to a post open it straight away
+      if (story) story.open = true;
+      spot.scrollIntoView();
+    }
     else if (location.hash) window.scrollTo(0, 0);
   }
   window.addEventListener("hashchange", route);
@@ -1447,6 +1628,784 @@ footer {
   });
   route();
   firstRoute = false;
+
+  /* ---------- Filters (Projects and Writing) ---------- */
+  // Each .filters group lists its cards in data-for; each card lists its topics in data-tags.
+  Array.prototype.forEach.call(document.querySelectorAll(".filters[data-for]"), function (group) {
+    var btns = group.querySelectorAll("[data-filter]");
+    var cards = document.querySelectorAll(group.getAttribute("data-for"));
+    function has(card, f) {
+      return f === "all" || (" " + card.getAttribute("data-tags") + " ").indexOf(" " + f + " ") !== -1;
+    }
+    Array.prototype.forEach.call(btns, function (b) {
+      var f = b.getAttribute("data-filter");
+      var n = 0;
+      Array.prototype.forEach.call(cards, function (c) { if (has(c, f)) n++; });
+      var count = document.createElement("span"); count.textContent = n; b.appendChild(count);
+      b.addEventListener("click", function () {
+        Array.prototype.forEach.call(btns, function (x) { x.setAttribute("aria-pressed", x === b ? "true" : "false"); });
+        Array.prototype.forEach.call(cards, function (c) { c.classList.toggle("hide", !has(c, f)); });
+      });
+    });
+  });
+
+  /* ---------- Story scenes ---------- */
+  // Opening a story's "Read the full story" plays a short full-screen scene that
+  // matches it. Tap anywhere or press Esc to skip. Skipped for reduced motion.
+  (function () {
+    var TAU = Math.PI * 2;
+    var cv, ctx, W, H, dpr, hint, scene, start, raf = 0, running = false, last = 0;
+    var MONO = "'DM Mono', ui-monospace, monospace";
+    var DISPLAY = "'Bricolage Grotesque', 'Instrument Sans', sans-serif";
+    function clamp(x) { return Math.max(0, Math.min(1, x)); }
+    function rnd(a, b) { return a + Math.random() * (b - a); }
+    function pick(list) { return list[Math.floor(Math.random() * list.length)]; }
+    function fade(t, s) { return clamp(Math.min(t / s.in, (s.total - t) / s.out)); }
+    function easeOut(k) { return 1 - Math.pow(1 - clamp(k), 3); }
+    function scaleU() { return Math.max(0.6, Math.min(1.2, W / 1100)); }
+    function roundRect(x, y, w, h, r) {
+      ctx.beginPath(); ctx.moveTo(x + r, y); ctx.arcTo(x + w, y, x + w, y + h, r); ctx.arcTo(x + w, y + h, x, y + h, r);
+      ctx.arcTo(x, y + h, x, y, r); ctx.arcTo(x, y, x + w, y, r); ctx.closePath();
+    }
+
+    /* --- the animals, all drawn facing right; flipped when swimming left --- */
+    function fish(L, c, t, stripes) {
+      var wag = Math.sin(t * 12) * 0.35;
+      ctx.save(); ctx.translate(-L * 0.45, 0); ctx.rotate(wag);
+      ctx.fillStyle = c; ctx.beginPath();
+      ctx.moveTo(0, 0); ctx.lineTo(-L * 0.35, -L * 0.28); ctx.lineTo(-L * 0.28, 0); ctx.lineTo(-L * 0.35, L * 0.28);
+      ctx.closePath(); ctx.fill(); ctx.restore();
+      ctx.fillStyle = c; ctx.beginPath(); ctx.ellipse(0, 0, L * 0.5, L * 0.26, 0, 0, TAU); ctx.fill();
+      ctx.beginPath(); ctx.moveTo(-L * 0.1, -L * 0.22); ctx.lineTo(L * 0.05, -L * 0.42); ctx.lineTo(L * 0.18, -L * 0.2); ctx.fill();
+      if (stripes) {
+        ctx.fillStyle = "rgba(255,255,255,0.9)";
+        ctx.fillRect(L * 0.12, -L * 0.24, L * 0.08, L * 0.48);
+        ctx.fillRect(-L * 0.18, -L * 0.25, L * 0.08, L * 0.5);
+      }
+      eye(L * 0.3, -L * 0.05, L * 0.06);
+    }
+    function eye(x, y, r) {
+      ctx.fillStyle = "#fff"; ctx.beginPath(); ctx.arc(x, y, r, 0, TAU); ctx.fill();
+      ctx.fillStyle = "#06121c"; ctx.beginPath(); ctx.arc(x + r * 0.25, y, r * 0.55, 0, TAU); ctx.fill();
+    }
+    function barracuda(L, t, k) {
+      var wag = Math.sin(t * 14 + k) * 0.3;
+      ctx.save(); ctx.translate(-L * 0.48, 0); ctx.rotate(wag);
+      ctx.fillStyle = "#cfdde6"; ctx.beginPath();
+      ctx.moveTo(0, 0); ctx.lineTo(-L * 0.18, -L * 0.14); ctx.lineTo(-L * 0.12, 0); ctx.lineTo(-L * 0.18, L * 0.14); ctx.fill(); ctx.restore();
+      var g = ctx.createLinearGradient(0, -L * 0.1, 0, L * 0.1);
+      g.addColorStop(0, "#9fb4c2"); g.addColorStop(1, "#eef5f9");
+      ctx.fillStyle = g; ctx.beginPath(); ctx.ellipse(0, 0, L * 0.5, L * 0.08, 0, 0, TAU); ctx.fill();
+      ctx.fillStyle = "#06121c"; ctx.beginPath(); ctx.arc(L * 0.36, -L * 0.015, L * 0.025, 0, TAU); ctx.fill();
+    }
+    function shark(L, t) {
+      var wag = Math.sin(t * 4) * 0.22;
+      ctx.fillStyle = "#7f97a8";
+      // tail
+      ctx.save(); ctx.translate(-L * 0.42, 0); ctx.rotate(wag);
+      ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(-L * 0.2, -L * 0.24); ctx.lineTo(-L * 0.12, 0); ctx.lineTo(-L * 0.16, L * 0.14); ctx.closePath(); ctx.fill();
+      ctx.restore();
+      // body
+      ctx.beginPath();
+      ctx.moveTo(L * 0.55, L * 0.02);
+      ctx.quadraticCurveTo(L * 0.35, -L * 0.17, -L * 0.1, -L * 0.13);
+      ctx.quadraticCurveTo(-L * 0.35, -L * 0.07, -L * 0.45, 0);
+      ctx.quadraticCurveTo(-L * 0.3, L * 0.09, 0, L * 0.11);
+      ctx.quadraticCurveTo(L * 0.35, L * 0.12, L * 0.55, L * 0.02);
+      ctx.fill();
+      // belly
+      ctx.fillStyle = "#dfe9ef"; ctx.beginPath();
+      ctx.moveTo(L * 0.5, L * 0.04); ctx.quadraticCurveTo(L * 0.2, L * 0.13, -L * 0.25, L * 0.06);
+      ctx.quadraticCurveTo(L * 0.1, L * 0.06, L * 0.5, L * 0.04); ctx.fill();
+      // fins
+      ctx.fillStyle = "#6c8597";
+      ctx.beginPath(); ctx.moveTo(L * 0.02, -L * 0.13); ctx.lineTo(-L * 0.12, -L * 0.36); ctx.lineTo(-L * 0.16, -L * 0.12); ctx.fill();
+      ctx.beginPath(); ctx.moveTo(L * 0.12, L * 0.08); ctx.lineTo(-L * 0.06, L * 0.26 + Math.sin(t * 3) * L * 0.03); ctx.lineTo(-L * 0.02, L * 0.09); ctx.fill();
+      // gills and eye
+      ctx.strokeStyle = "rgba(20,40,55,0.6)"; ctx.lineWidth = Math.max(1, L * 0.008);
+      for (var i = 0; i < 3; i++) { ctx.beginPath(); ctx.moveTo(L * (0.25 - i * 0.04), -L * 0.05); ctx.lineTo(L * (0.23 - i * 0.04), L * 0.05); ctx.stroke(); }
+      ctx.fillStyle = "#06121c"; ctx.beginPath(); ctx.arc(L * 0.4, -L * 0.035, L * 0.018, 0, TAU); ctx.fill();
+    }
+    function turtle(L, t) {
+      var p = Math.sin(t * 2.4);
+      ctx.fillStyle = "#7fb069";
+      // flippers paddling
+      function flipper(x, y, len, ang) {
+        ctx.save(); ctx.translate(x, y); ctx.rotate(ang);
+        ctx.beginPath(); ctx.ellipse(len * 0.5, 0, len * 0.5, len * 0.16, 0, 0, TAU); ctx.fill(); ctx.restore();
+      }
+      flipper(L * 0.18, -L * 0.18, L * 0.42, -0.9 + p * 0.5);
+      flipper(L * 0.18, L * 0.18, L * 0.42, 0.9 - p * 0.5);
+      flipper(-L * 0.25, -L * 0.15, L * 0.22, -2.4 - p * 0.3);
+      flipper(-L * 0.25, L * 0.15, L * 0.22, 2.4 + p * 0.3);
+      // head
+      ctx.beginPath(); ctx.ellipse(L * 0.45, 0, L * 0.13, L * 0.09, 0, 0, TAU); ctx.fill();
+      eye(L * 0.5, -L * 0.03, L * 0.025);
+      // shell
+      ctx.fillStyle = "#6b4f2a"; ctx.beginPath(); ctx.ellipse(0, 0, L * 0.38, L * 0.27, 0, 0, TAU); ctx.fill();
+      ctx.strokeStyle = "#c9a66b"; ctx.lineWidth = Math.max(1, L * 0.015);
+      ctx.beginPath(); ctx.ellipse(0, 0, L * 0.38, L * 0.27, 0, 0, TAU); ctx.stroke();
+      ctx.beginPath(); ctx.ellipse(0, 0, L * 0.14, L * 0.1, 0, 0, TAU); ctx.stroke();
+      for (var i = 0; i < 6; i++) {
+        var a = i / 6 * TAU;
+        ctx.beginPath(); ctx.moveTo(Math.cos(a) * L * 0.14, Math.sin(a) * L * 0.1); ctx.lineTo(Math.cos(a) * L * 0.36, Math.sin(a) * L * 0.25); ctx.stroke();
+      }
+    }
+    function ray(L, t) {
+      var f = Math.sin(t * 3) * L * 0.12;
+      ctx.strokeStyle = "#5d4a3a"; ctx.lineWidth = Math.max(1.5, L * 0.015);
+      ctx.beginPath(); ctx.moveTo(-L * 0.25, 0);
+      ctx.quadraticCurveTo(-L * 0.6, Math.sin(t * 3 + 1) * L * 0.06, -L * 0.95, Math.sin(t * 3 + 2) * L * 0.05); ctx.stroke();
+      ctx.fillStyle = "#8a735c"; ctx.beginPath();
+      ctx.moveTo(L * 0.35, 0);
+      ctx.quadraticCurveTo(L * 0.1, -L * 0.1, 0, -L * 0.45 - f);
+      ctx.quadraticCurveTo(-L * 0.15, -L * 0.15, -L * 0.28, 0);
+      ctx.quadraticCurveTo(-L * 0.15, L * 0.15, 0, L * 0.45 + f);
+      ctx.quadraticCurveTo(L * 0.1, L * 0.1, L * 0.35, 0);
+      ctx.fill();
+      eye(L * 0.16, -L * 0.06, L * 0.025); eye(L * 0.16, L * 0.06, L * 0.025);
+    }
+    function eel(L, t) {
+      ctx.strokeStyle = "#7d9a3c"; ctx.lineCap = "round"; ctx.lineWidth = L * 0.07;
+      ctx.beginPath();
+      for (var i = 0; i <= 30; i++) {
+        var u = i / 30, x = -L + u * L, y = Math.sin(u * 9 - t * 6) * L * 0.06 * (1 - u * 0.6);
+        if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+      }
+      ctx.stroke();
+      ctx.fillStyle = "#7d9a3c"; ctx.beginPath(); ctx.ellipse(L * 0.02, 0, L * 0.08, L * 0.05, 0, 0, TAU); ctx.fill();
+      var m = (Math.sin(t * 4) + 1) * 0.5 * L * 0.03;
+      ctx.fillStyle = "#3a1a1a"; ctx.beginPath(); ctx.moveTo(L * 0.1, 0); ctx.lineTo(L * 0.03, -m); ctx.lineTo(L * 0.03, m); ctx.fill();
+      eye(L * 0.03, -L * 0.03, L * 0.015);
+    }
+    function puffer(L, t, puffed) {
+      var r = L * (0.28 + puffed * 0.32);
+      ctx.fillStyle = "#e8c770";
+      if (puffed > 0.05) {
+        ctx.strokeStyle = "#b8923a"; ctx.lineWidth = Math.max(1, L * 0.02);
+        for (var i = 0; i < 22; i++) {
+          var a = i / 22 * TAU;
+          ctx.beginPath(); ctx.moveTo(Math.cos(a) * r, Math.sin(a) * r);
+          ctx.lineTo(Math.cos(a) * (r + L * 0.12 * puffed), Math.sin(a) * (r + L * 0.12 * puffed)); ctx.stroke();
+        }
+      }
+      ctx.save(); ctx.translate(-r * 0.95, 0); ctx.rotate(Math.sin(t * 10) * 0.4);
+      ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(-L * 0.18, -L * 0.12); ctx.lineTo(-L * 0.18, L * 0.12); ctx.fill(); ctx.restore();
+      ctx.beginPath(); ctx.arc(0, 0, r, 0, TAU); ctx.fill();
+      ctx.fillStyle = "#fff4d6"; ctx.beginPath(); ctx.ellipse(0, r * 0.35, r * 0.75, r * 0.5, 0, 0, Math.PI); ctx.fill();
+      ctx.fillStyle = "#c99b3a";
+      for (var s = 0; s < 6; s++) { ctx.beginPath(); ctx.arc(-r * 0.3 + (s % 3) * r * 0.3, -r * 0.35 + Math.floor(s / 3) * r * 0.25, r * 0.06, 0, TAU); ctx.fill(); }
+      eye(r * 0.55, -r * 0.2, Math.max(2, r * 0.17));
+      ctx.fillStyle = "#b4513a"; ctx.beginPath(); ctx.arc(r * 0.95, r * 0.1, r * 0.07, 0, TAU); ctx.fill();
+    }
+
+
+    /* ===== Where Silence Breathes: the ocean floods in ===== */
+    function oceanScene() {
+      var RISE = 1.1, STAY = 7.5, DRAIN = 1.2, things = [], bubbles = [];
+      function add(kind, x, y, vx, L, extra) {
+        var o = { kind: kind, x: x, y: y, vx: vx, L: L, ph: Math.random() * 6, bob: L * 0.06 };
+        for (var k in extra || {}) o[k] = extra[k];
+        things.push(o);
+      }
+      function level(t) {
+        var over = 30;
+        if (t < RISE) return (H + over) * Math.pow(1 - t / RISE, 3) - over;
+        if (t > RISE + STAY) { var d = (t - RISE - STAY) / DRAIN; return (H + over) * d * d - over; }
+        return -over;
+      }
+      return {
+        total: RISE + STAY + DRAIN, in: RISE, out: DRAIN,
+        init: function () {
+          var u = scaleU();
+          add("shark", -300, H * 0.22, 80, 260 * u);
+          add("shark", -800, H * 0.33, 95, 190 * u);
+          add("shark", W + 250, H * 0.7, -70, 230 * u);
+          add("turtle", -200, H * 0.5, 40, 150 * u);
+          add("turtle", W + 500, H * 0.84, -32, 120 * u);
+          add("ray", W + 120, H - 70 * u, -55, 170 * u);
+          add("eel", -260, H * 0.93, 50, 240 * u);
+          add("puffer", -80, H * 0.6, 55, 80 * u);
+          var colors = [["#ff8c42", true], ["#ffd23f", false], ["#3ec1d3", false], ["#ff5d73", false], ["#f9a03f", true], ["#7bdff2", false]];
+          for (var i = 0; i < 16; i++) {
+            var right = i % 2 === 0, c = colors[i % colors.length];
+            add("fish", right ? -60 - Math.random() * W * 0.9 : W + 60 + Math.random() * W * 0.9,
+                H * (0.08 + Math.random() * 0.82), (right ? 1 : -1) * (70 + Math.random() * 80),
+                (34 + Math.random() * 26) * u, { color: c[0], stripes: c[1] });
+          }
+          for (var b = 0; b < 60; b++) bubbles.push({ x: Math.random() * W, y: H + Math.random() * H, r: 1 + Math.random() * 3, v: 30 + Math.random() * 60 });
+        },
+        draw: function (t, dt) {
+          var top = level(t);
+          ctx.save(); ctx.beginPath(); ctx.moveTo(0, H);
+          for (var x = 0; x <= W + 20; x += 20) ctx.lineTo(x, top + Math.sin(x / 70 + t * 3) * 8 + Math.sin(x / 31 - t * 2) * 4);
+          ctx.lineTo(W, H); ctx.closePath();
+          var g = ctx.createLinearGradient(0, Math.max(0, top), 0, H);
+          g.addColorStop(0, "rgba(28,120,180,0.985)"); g.addColorStop(0.5, "rgba(10,70,120,0.99)"); g.addColorStop(1, "rgba(4,30,60,1)");
+          ctx.fillStyle = g; ctx.fill(); ctx.clip();
+          ctx.globalAlpha = 0.07; ctx.fillStyle = "#fff";
+          for (var r = 0; r < 5; r++) {
+            var rx = (W / 5) * r + Math.sin(t * 0.6 + r) * 40;
+            ctx.beginPath(); ctx.moveTo(rx, top); ctx.lineTo(rx + 60, top); ctx.lineTo(rx + 200, H); ctx.lineTo(rx + 80, H); ctx.fill();
+          }
+          ctx.globalAlpha = 1;
+          var cx = W * 0.72, cy = H * 0.42, n = 46, BL = Math.max(26, Math.min(46, W / 30));
+          for (var k = 0; k < n; k++) {
+            var a = k * 0.55 + t * 1.3, rr = 34 + (k % 7) * Math.min(16, W / 65);
+            var bx = cx + Math.cos(a) * rr, by = cy + (k / n - 0.5) * H * 0.42 + Math.sin(a) * rr * 0.22;
+            var dir = -Math.sin(a) >= 0 ? 1 : -1, depth = 0.55 + 0.45 * Math.abs(Math.sin(a));
+            ctx.save(); ctx.translate(bx, by); ctx.scale(dir * depth, depth); ctx.globalAlpha = 0.6 + 0.4 * depth;
+            barracuda(BL, t, k); ctx.restore();
+          }
+          ctx.globalAlpha = 1;
+          for (var i = 0; i < things.length; i++) {
+            var o = things[i]; o.x += o.vx * dt;
+            var y = o.y + Math.sin(t * 1.5 + o.ph) * o.bob;
+            ctx.save(); ctx.translate(o.x, y); if (o.vx < 0) ctx.scale(-1, 1);
+            if (o.kind === "fish") fish(o.L, o.color, t + o.ph, o.stripes);
+            else if (o.kind === "shark") shark(o.L, t + o.ph);
+            else if (o.kind === "turtle") turtle(o.L, t + o.ph);
+            else if (o.kind === "ray") ray(o.L, t + o.ph);
+            else if (o.kind === "eel") eel(o.L, t + o.ph);
+            else if (o.kind === "puffer") puffer(o.L, t, clamp(1.6 - Math.abs(o.x - W * 0.5) / (W * 0.18)));
+            ctx.restore();
+          }
+          ctx.strokeStyle = "rgba(255,255,255,0.55)"; ctx.lineWidth = 1;
+          for (var b = 0; b < bubbles.length; b++) {
+            var bu = bubbles[b]; bu.y -= bu.v * dt;
+            if (bu.y < top - 10) { bu.y = H + 10; bu.x = Math.random() * W; }
+            ctx.beginPath(); ctx.arc(bu.x + Math.sin(t * 2 + b) * 4, bu.y, bu.r, 0, TAU); ctx.stroke();
+          }
+          ctx.restore();
+        }
+      };
+    }
+
+    /* ===== How I got into AI: circuit traces grow into a neural network ===== */
+    function circuitScene() {
+      var traces = [], net = null;
+      return {
+        total: 7.5, in: 0.5, out: 0.9,
+        init: function () {
+          var n = Math.round(Math.max(18, Math.min(40, W / 32)));
+          for (var i = 0; i < n; i++) {
+            var fromLeft = Math.random() < 0.5;
+            var x = fromLeft ? 0 : rnd(0, W), y = fromLeft ? rnd(0, H) : H;
+            var pts = [[x, y]], horiz = fromLeft;
+            var segs = Math.floor(rnd(4, 8));
+            for (var s = 0; s < segs; s++) {
+              var len = rnd(40, 170) * scaleU();
+              if (horiz) x += len; else y -= len * (Math.random() < 0.75 ? 1 : -1);
+              x = Math.max(0, Math.min(W, x)); y = Math.max(0, Math.min(H, y));
+              pts.push([x, y]); horiz = !horiz;
+            }
+            var total = 0;
+            for (var p = 1; p < pts.length; p++) total += Math.abs(pts[p][0] - pts[p - 1][0]) + Math.abs(pts[p][1] - pts[p - 1][1]);
+            traces.push({ pts: pts, len: total, delay: rnd(0, 1.3), speed: rnd(380, 620), led: pick(["#ff4d4d", "#4dff88", "#4dc3ff", "#ffd84d"]) });
+          }
+          var layers = [3, 5, 5, 2], w = Math.min(W * 0.7, 620), h = Math.min(H * 0.5, 360);
+          net = layers.map(function (count, li) {
+            var nodes = [];
+            for (var j = 0; j < count; j++) nodes.push([W / 2 - w / 2 + li * w / (layers.length - 1), H / 2 - h / 2 + (j + 0.5) * h / count]);
+            return nodes;
+          });
+        },
+        draw: function (t) {
+          var A = fade(t, this);
+          ctx.fillStyle = "rgba(5,30,20," + A + ")"; ctx.fillRect(0, 0, W, H);
+          ctx.fillStyle = "rgba(120,200,150," + (0.08 * A) + ")";
+          for (var gx = 12; gx < W; gx += 24) for (var gy = 12; gy < H; gy += 24) ctx.fillRect(gx, gy, 1.5, 1.5);
+          var dim = t > 3.4 ? 1 - 0.5 * clamp((t - 3.4) / 0.8) : 1;
+          ctx.lineCap = "round"; ctx.lineJoin = "round";
+          for (var i = 0; i < traces.length; i++) {
+            var tr = traces[i], prog = Math.max(0, (t - tr.delay) * tr.speed), left = prog;
+            ctx.strokeStyle = "rgba(217,164,65," + (A * dim) + ")"; ctx.lineWidth = 2.5;
+            ctx.shadowColor = "rgba(255,190,80,0.8)"; ctx.shadowBlur = 6;
+            ctx.beginPath(); ctx.moveTo(tr.pts[0][0], tr.pts[0][1]);
+            var end = tr.pts[0];
+            for (var p = 1; p < tr.pts.length && left > 0; p++) {
+              var a = tr.pts[p - 1], b = tr.pts[p];
+              var seg = Math.abs(b[0] - a[0]) + Math.abs(b[1] - a[1]);
+              var k = Math.min(1, left / (seg || 1));
+              end = [a[0] + (b[0] - a[0]) * k, a[1] + (b[1] - a[1]) * k];
+              ctx.lineTo(end[0], end[1]); left -= seg;
+            }
+            ctx.stroke(); ctx.shadowBlur = 0;
+            ctx.fillStyle = "rgba(240,200,110," + (A * dim) + ")";
+            ctx.beginPath(); ctx.arc(tr.pts[0][0], tr.pts[0][1], 3.5, 0, TAU); ctx.fill();
+            if (prog >= tr.len) {
+              var blink = 0.6 + 0.4 * Math.sin(t * 8 + i);
+              ctx.fillStyle = tr.led; ctx.globalAlpha = A * blink * dim;
+              ctx.shadowColor = tr.led; ctx.shadowBlur = 14;
+              ctx.beginPath(); ctx.arc(end[0], end[1], 5, 0, TAU); ctx.fill();
+              ctx.shadowBlur = 0; ctx.globalAlpha = 1;
+            }
+          }
+          // the GMI camp: a robotic hand that grips, and an early EV driving past
+          var G = clamp((t - 0.3) / 0.6) * (1 - clamp((t - 3.3) / 0.7)) * A;
+          if (G > 0) {
+            var u = scaleU(), hx = W * (W < 700 ? 0.5 : 0.2), hy = H * (W < 700 ? 0.3 : 0.42), sz = 100 * u + 20;
+            var grip = (Math.sin(t * 2.6) + 1) / 2;            // 0 open, 1 closed
+            ctx.globalAlpha = G; ctx.lineCap = "round"; ctx.lineJoin = "round";
+            ctx.save(); ctx.translate(hx, hy);
+            // wrist and palm
+            ctx.fillStyle = "#33463d"; ctx.strokeStyle = "#d9a441"; ctx.lineWidth = 2;
+            roundRect(-sz * 0.22, sz * 0.35, sz * 0.44, sz * 0.5, 6); ctx.fill(); ctx.stroke();
+            roundRect(-sz * 0.38, -sz * 0.1, sz * 0.76, sz * 0.48, 10); ctx.fill(); ctx.stroke();
+            ctx.strokeStyle = "rgba(120,255,190,0.6)"; ctx.lineWidth = 1.2;
+            for (var wl = -1; wl <= 1; wl++) { ctx.beginPath(); ctx.moveTo(wl * sz * 0.1, sz * 0.85); ctx.lineTo(wl * sz * 0.1, sz * 0.1); ctx.stroke(); }
+            // four fingers, two segments each, curling together
+            for (var fi = 0; fi < 4; fi++) {
+              var fx = -sz * 0.29 + fi * sz * 0.193, len = sz * (fi === 0 || fi === 3 ? 0.24 : 0.28);
+              ctx.save(); ctx.translate(fx, -sz * 0.1);
+              var a1 = -grip * 1.1, a2 = -grip * 1.3;
+              ctx.rotate(a1 * 0.2);
+              ctx.strokeStyle = "#9fb0a7"; ctx.lineWidth = sz * 0.11;
+              ctx.beginPath(); ctx.moveTo(0, 0); var j1x = Math.sin(-a1) * len * 0.0, j1y = -len; ctx.lineTo(0, -len); ctx.stroke();
+              ctx.translate(0, -len); ctx.rotate(-a1);
+              ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(0, -len * 0.85); ctx.stroke();
+              ctx.translate(0, -len * 0.85); ctx.rotate(-a2 * 0.6);
+              ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(0, -len * 0.6); ctx.stroke();
+              ctx.restore();
+              ctx.fillStyle = "#d9a441"; ctx.beginPath(); ctx.arc(fx, -sz * 0.1, sz * 0.05, 0, TAU); ctx.fill();
+            }
+            // thumb
+            ctx.save(); ctx.translate(sz * 0.38, sz * 0.18); ctx.rotate(-0.6 - grip * 0.9);
+            ctx.strokeStyle = "#9fb0a7"; ctx.lineWidth = sz * 0.12;
+            ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(sz * 0.26, 0); ctx.stroke(); ctx.restore();
+            ctx.fillStyle = "#d9a441"; ctx.beginPath(); ctx.arc(sz * 0.38, sz * 0.18, sz * 0.05, 0, TAU); ctx.fill();
+            ctx.restore();
+            // the EV
+            var cw = 150 * u + 30, ch = cw * 0.32, cxp = -cw + ((t - 0.3) / 3.2) * (W + cw * 2), cyp = H * 0.86;
+            ctx.save(); ctx.translate(cxp, cyp);
+            ctx.fillStyle = "#1f8a5b"; ctx.strokeStyle = "#78ffbe"; ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(-cw / 2, 0); ctx.lineTo(-cw / 2, -ch * 0.55);
+            ctx.quadraticCurveTo(-cw * 0.35, -ch * 0.6, -cw * 0.22, -ch * 1.05);
+            ctx.lineTo(cw * 0.15, -ch * 1.05); ctx.quadraticCurveTo(cw * 0.3, -ch * 0.6, cw * 0.5, -ch * 0.5);
+            ctx.lineTo(cw / 2, 0); ctx.closePath(); ctx.fill(); ctx.stroke();
+            ctx.fillStyle = "rgba(180,255,220,0.35)";
+            ctx.beginPath(); ctx.moveTo(-cw * 0.18, -ch * 0.95); ctx.lineTo(cw * 0.12, -ch * 0.95); ctx.lineTo(cw * 0.24, -ch * 0.6); ctx.lineTo(-cw * 0.3, -ch * 0.6); ctx.closePath(); ctx.fill();
+            // lightning bolt on the door
+            ctx.fillStyle = "#ffd84d"; ctx.beginPath();
+            ctx.moveTo(-cw * 0.02, -ch * 0.5); ctx.lineTo(-cw * 0.1, -ch * 0.2); ctx.lineTo(-cw * 0.03, -ch * 0.22);
+            ctx.lineTo(-cw * 0.08, ch * 0.0); ctx.lineTo(cw * 0.06, -ch * 0.3); ctx.lineTo(-cw * 0.01, -ch * 0.28); ctx.closePath(); ctx.fill();
+            // wheels
+            [-cw * 0.3, cw * 0.3].forEach(function (wx) {
+              ctx.fillStyle = "#0b1f16"; ctx.strokeStyle = "#d9a441"; ctx.lineWidth = 2;
+              ctx.beginPath(); ctx.arc(wx, 0, ch * 0.32, 0, TAU); ctx.fill(); ctx.stroke();
+              var spin = t * 12;
+              ctx.beginPath(); ctx.moveTo(wx + Math.cos(spin) * ch * 0.25, Math.sin(spin) * ch * 0.25); ctx.lineTo(wx - Math.cos(spin) * ch * 0.25, -Math.sin(spin) * ch * 0.25); ctx.stroke();
+            });
+            // a trail of sparks behind it
+            for (var sp = 0; sp < 6; sp++) {
+              ctx.fillStyle = "rgba(120,255,190," + (0.6 - sp * 0.1) + ")";
+              ctx.beginPath(); ctx.arc(-cw / 2 - 10 - sp * 14, -ch * 0.2 + Math.sin(t * 20 + sp) * 4, 2.5, 0, TAU); ctx.fill();
+            }
+            ctx.restore();
+            ctx.fillStyle = "rgba(200,255,225," + G + ")"; ctx.font = "500 " + Math.round(12 * u + 4) + "px " + MONO; ctx.textAlign = "center";
+            ctx.fillText("GMI camp · age 12", hx, hy + sz * 1.15); ctx.textAlign = "left";
+            ctx.globalAlpha = 1;
+          }
+          // the neural network lights up
+          var N = clamp((t - 3.2) / 0.9) * A;
+          if (N > 0) {
+            for (var l = 0; l < net.length - 1; l++) for (var a1 = 0; a1 < net[l].length; a1++) for (var b1 = 0; b1 < net[l + 1].length; b1++) {
+              var p1 = net[l][a1], p2 = net[l + 1][b1];
+              ctx.strokeStyle = "rgba(120,255,190," + (0.18 * N) + ")"; ctx.lineWidth = 1;
+              ctx.beginPath(); ctx.moveTo(p1[0], p1[1]); ctx.lineTo(p2[0], p2[1]); ctx.stroke();
+              var ph = ((t * 0.9 + (a1 * 7 + b1 * 3 + l * 5) * 0.13) % 1);
+              ctx.fillStyle = "rgba(180,255,220," + N + ")";
+              ctx.beginPath(); ctx.arc(p1[0] + (p2[0] - p1[0]) * ph, p1[1] + (p2[1] - p1[1]) * ph, 2.2, 0, TAU); ctx.fill();
+            }
+            for (var l2 = 0; l2 < net.length; l2++) for (var j = 0; j < net[l2].length; j++) {
+              var q = net[l2][j], pulse = 0.6 + 0.4 * Math.sin(t * 4 - l2 * 1.2 + j);
+              ctx.fillStyle = "rgba(10,40,28," + N + ")"; ctx.strokeStyle = "rgba(120,255,190," + (N * pulse) + ")"; ctx.lineWidth = 2;
+              ctx.shadowColor = "#78ffbe"; ctx.shadowBlur = 16 * pulse;
+              ctx.beginPath(); ctx.arc(q[0], q[1], 11 * scaleU() + 4, 0, TAU); ctx.fill(); ctx.stroke(); ctx.shadowBlur = 0;
+            }
+            ctx.fillStyle = "rgba(200,255,225," + N + ")"; ctx.font = "500 " + Math.round(13 * scaleU() + 3) + "px " + MONO;
+            ctx.textAlign = "center"; ctx.fillText("age 12  →  wires  →  code  →  AI", W / 2, H / 2 + Math.min(H * 0.5, 360) / 2 + 40);
+            ctx.textAlign = "left";
+          }
+        }
+      };
+    }
+
+    /* ===== Fair Hire: photos fade out, skills light up, the scale levels ===== */
+    function fairScene() {
+      var cards = [];
+      return {
+        total: 7.2, in: 0.5, out: 0.9,
+        init: function () {
+          var u = scaleU(), cw = 104 * u, cols = Math.max(3, Math.floor(W / (cw * 1.35)));
+          for (var i = 0; i < cols * 3; i++) {
+            cards.push({ x: (i % cols + 0.5) * W / cols - cw / 2 + rnd(-20, 20), y: -rnd(140, H * 1.3) * u - (Math.floor(i / cols)) * 160 * u,
+                         vy: rnd(120, 190), w: cw, h: cw * 1.3, rot: rnd(-0.2, 0.2), spin: rnd(-0.4, 0.4), at: rnd(0.3, 0.6) });
+          }
+        },
+        draw: function (t, dt) {
+          var A = fade(t, this);
+          ctx.fillStyle = "rgba(243,239,230," + A + ")"; ctx.fillRect(0, 0, W, H);
+          ctx.globalAlpha = A;
+          for (var i = 0; i < cards.length; i++) {
+            var c = cards[i]; c.y += c.vy * dt; c.rot += c.spin * dt * 0.3;
+            var fair = c.y + c.h / 2 > H * c.at;            // past this line, the card is judged fairly
+            ctx.save(); ctx.translate(c.x + c.w / 2, c.y + c.h / 2); ctx.rotate(c.rot);
+            ctx.shadowColor = "rgba(0,0,0,0.15)"; ctx.shadowBlur = 10; ctx.shadowOffsetY = 4;
+            ctx.fillStyle = "#fff"; roundRect(-c.w / 2, -c.h / 2, c.w, c.h, 6); ctx.fill();
+            ctx.shadowBlur = 0; ctx.shadowOffsetY = 0;
+            var pw = c.w * 0.3, px = -c.w / 2 + c.w * 0.1, py = -c.h / 2 + c.h * 0.08;
+            if (!fair) {
+              ctx.fillStyle = "#c8ced3"; ctx.fillRect(px, py, pw, pw);
+              ctx.fillStyle = "#8a949c"; ctx.beginPath(); ctx.arc(px + pw / 2, py + pw * 0.4, pw * 0.18, 0, TAU); ctx.fill();
+              ctx.beginPath(); ctx.arc(px + pw / 2, py + pw * 1.0, pw * 0.36, Math.PI, 0); ctx.fill();
+            } else {
+              ctx.setLineDash([3, 3]); ctx.strokeStyle = "#b8bfc5"; ctx.lineWidth = 1.2; ctx.strokeRect(px, py, pw, pw); ctx.setLineDash([]);
+              ctx.fillStyle = "#9aa3aa"; ctx.font = "600 " + Math.round(pw * 0.6) + "px " + MONO; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+              ctx.fillText("?", px + pw / 2, py + pw / 2 + 1); ctx.textAlign = "left"; ctx.textBaseline = "alphabetic";
+            }
+            ctx.fillStyle = "#dfe3e6";
+            ctx.fillRect(px + pw + c.w * 0.08, py + pw * 0.15, c.w * 0.4, c.h * 0.04);
+            ctx.fillRect(px + pw + c.w * 0.08, py + pw * 0.55, c.w * 0.3, c.h * 0.04);
+            var skills = ["#2bb673", "#1f9bd1", "#f2a541", "#d8432b"];
+            for (var r = 0; r < 4; r++) {
+              ctx.fillStyle = fair ? skills[(i + r) % 4] : "#e3e6e9";
+              ctx.fillRect(px, py + pw + c.h * (0.1 + r * 0.12), c.w * (0.8 - (r % 2) * 0.2), c.h * 0.05);
+            }
+            if (fair) {
+              ctx.fillStyle = "#2bb673"; ctx.beginPath(); ctx.arc(c.w / 2 - c.w * 0.14, -c.h / 2 + c.w * 0.14, c.w * 0.09, 0, TAU); ctx.fill();
+              ctx.strokeStyle = "#fff"; ctx.lineWidth = 2; ctx.beginPath();
+              ctx.moveTo(c.w / 2 - c.w * 0.18, -c.h / 2 + c.w * 0.14); ctx.lineTo(c.w / 2 - c.w * 0.15, -c.h / 2 + c.w * 0.17); ctx.lineTo(c.w / 2 - c.w * 0.1, -c.h / 2 + c.w * 0.1); ctx.stroke();
+            }
+            ctx.restore();
+          }
+          // the balance scale settles level
+          var S = clamp((t - 2.2) / 0.6);
+          if (S > 0) {
+            var u = scaleU(), cx = W / 2, cy = H * 0.46, arm = 150 * u;
+            var ang = 0.4 * Math.exp(-(t - 2.2) * 1.3) * Math.cos((t - 2.2) * 4.5);
+            ctx.globalAlpha = A * S;
+            ctx.fillStyle = "rgba(243,239,230,0.9)"; ctx.beginPath(); ctx.arc(cx, cy + 30 * u, arm * 1.35, 0, TAU); ctx.fill();
+            ctx.strokeStyle = "#10282B"; ctx.fillStyle = "#10282B"; ctx.lineWidth = 5 * u; ctx.lineCap = "round";
+            ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(cx, cy + 170 * u); ctx.stroke();
+            ctx.beginPath(); ctx.moveTo(cx - 60 * u, cy + 170 * u); ctx.lineTo(cx + 60 * u, cy + 170 * u); ctx.stroke();
+            var dx = Math.cos(ang) * arm, dy = Math.sin(ang) * arm;
+            ctx.beginPath(); ctx.moveTo(cx - dx, cy - dy); ctx.lineTo(cx + dx, cy + dy); ctx.stroke();
+            ctx.beginPath(); ctx.arc(cx, cy, 9 * u, 0, TAU); ctx.fill();
+            [[-1, "#d8432b"], [1, "#2bb673"]].forEach(function (side) {
+              var ex = cx + side[0] * dx, ey = cy + side[0] * dy;
+              ctx.lineWidth = 2 * u;
+              ctx.beginPath(); ctx.moveTo(ex, ey); ctx.lineTo(ex - 32 * u, ey + 60 * u); ctx.moveTo(ex, ey); ctx.lineTo(ex + 32 * u, ey + 60 * u); ctx.stroke();
+              ctx.fillStyle = side[1]; ctx.beginPath(); ctx.ellipse(ex, ey + 62 * u, 40 * u, 10 * u, 0, 0, Math.PI); ctx.fill();
+            });
+            ctx.fillStyle = "#10282B"; ctx.font = "800 " + Math.round(30 * u + 6) + "px " + DISPLAY; ctx.textAlign = "center";
+            ctx.fillText("Skills, not photos.", cx, cy + 230 * u); ctx.textAlign = "left";
+          }
+          ctx.globalAlpha = 1;
+        }
+      };
+    }
+
+    /* ===== NAIC: a grey, rainy 2025 breaks into a TOP 6 celebration ===== */
+    function naicScene() {
+      var rain = [], sparks = [], confetti = [], nextBurst = 0, crack = [];
+      var FLIP = 2.4;
+      function burst() {
+        var x = rnd(W * 0.15, W * 0.85), y = rnd(H * 0.12, H * 0.45), c = pick(["#FF6A4D", "#ffd23f", "#7bdff2", "#b8f2a1", "#ff9ecd"]);
+        for (var i = 0; i < 46; i++) { var a = rnd(0, TAU), v = rnd(80, 260); sparks.push({ x: x, y: y, vx: Math.cos(a) * v, vy: Math.sin(a) * v, life: rnd(0.9, 1.5), age: 0, c: c }); }
+      }
+      return {
+        total: 7.4, in: 0.4, out: 0.9,
+        init: function () {
+          for (var i = 0; i < 140; i++) rain.push({ x: rnd(0, W), y: rnd(-H, H), v: rnd(600, 900) });
+          for (var c = 0; c < 140; c++) confetti.push({ x: rnd(0, W), y: rnd(-H * 1.2, -10), vy: rnd(90, 180), vx: rnd(-30, 30), r: rnd(0, TAU), vr: rnd(-6, 6), c: pick(["#FF6A4D", "#ffd23f", "#7bdff2", "#b8f2a1", "#ff9ecd", "#ffffff"]), s: rnd(6, 11) });
+          var x = W / 2 - Math.min(W * 0.28, 260) * 1.05, y = H * 0.47, lim = Math.min(W * 0.28, 260) * 0.3;
+          while (x < W / 2 + Math.min(W * 0.28, 260) * 1.05) { crack.push([x, y]); x += rnd(14, 30); y += rnd(-22, 22); y = Math.max(H * 0.47 - lim, Math.min(H * 0.47 + lim, y)); }
+        },
+        draw: function (t, dt) {
+          var A = fade(t, this), u = scaleU();
+          if (t < FLIP) {
+            ctx.fillStyle = "rgba(26,30,36," + A + ")"; ctx.fillRect(0, 0, W, H);
+            ctx.globalAlpha = A;
+            ctx.save(); ctx.translate(Math.sin(t * 40) * 1.5, 0);
+            ctx.fillStyle = "#4a525c"; ctx.font = "800 " + Math.round(Math.min(W * 0.28, 260)) + "px " + DISPLAY;
+            ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.fillText("2025", W / 2, H * 0.47);
+            ctx.font = "500 " + Math.round(14 * u + 4) + "px " + MONO; ctx.fillStyle = "#7d8792";
+            ctx.fillText("NAIC 2025 · didn't win", W / 2, H * 0.47 + Math.min(W * 0.28, 260) * 0.55);
+            ctx.restore();
+            var k = clamp((t - 0.9) / 1.2);
+            ctx.strokeStyle = "rgba(230,236,242,0.95)"; ctx.lineWidth = 3; ctx.beginPath();
+            for (var i = 0; i < crack.length * k; i++) { if (i === 0) ctx.moveTo(crack[0][0], crack[0][1]); else ctx.lineTo(crack[i][0], crack[i][1]); }
+            ctx.stroke();
+            ctx.strokeStyle = "rgba(160,175,190,0.35)"; ctx.lineWidth = 1;
+            for (var r = 0; r < rain.length; r++) {
+              var d = rain[r]; d.y += d.v * dt; if (d.y > H) { d.y = -20; d.x = rnd(0, W); }
+              ctx.beginPath(); ctx.moveTo(d.x, d.y); ctx.lineTo(d.x - 3, d.y + 16); ctx.stroke();
+            }
+            ctx.textAlign = "left"; ctx.textBaseline = "alphabetic"; ctx.globalAlpha = 1;
+            return;
+          }
+          var g = ctx.createLinearGradient(0, 0, 0, H);
+          g.addColorStop(0, "rgba(11,21,48," + A + ")"); g.addColorStop(1, "rgba(40,16,52," + A + ")");
+          ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+          ctx.globalAlpha = A;
+          if (t > nextBurst) { burst(); nextBurst = t + rnd(0.25, 0.45); }
+          for (var s = sparks.length - 1; s >= 0; s--) {
+            var p = sparks[s]; p.age += dt; if (p.age > p.life) { sparks.splice(s, 1); continue; }
+            p.vy += 140 * dt; p.x += p.vx * dt; p.y += p.vy * dt; p.vx *= 0.985;
+            ctx.fillStyle = p.c; ctx.globalAlpha = A * (1 - p.age / p.life);
+            ctx.beginPath(); ctx.arc(p.x, p.y, 2.4, 0, TAU); ctx.fill();
+          }
+          ctx.globalAlpha = A;
+          for (var c2 = 0; c2 < confetti.length; c2++) {
+            var f = confetti[c2]; f.y += f.vy * dt; f.x += f.vx * dt + Math.sin(t * 3 + c2) * 0.6; f.r += f.vr * dt;
+            ctx.save(); ctx.translate(f.x, f.y); ctx.rotate(f.r); ctx.fillStyle = f.c;
+            ctx.fillRect(-f.s / 2, -f.s / 4, f.s, f.s / 2 * Math.abs(Math.cos(f.r * 2)) + 1); ctx.restore();
+          }
+          var k2 = (t - FLIP) / 0.7, pop = k2 < 1 ? 0.5 + 0.6 * easeOut(k2) - 0.1 * Math.sin(k2 * Math.PI) : 1;
+          ctx.save(); ctx.translate(W / 2, H * 0.47); ctx.scale(pop, pop);
+          ctx.textAlign = "center"; ctx.textBaseline = "middle";
+          ctx.font = "500 " + Math.round(15 * u + 4) + "px " + MONO; ctx.fillStyle = "#ffd23f";
+          ctx.fillText("NAIC 2026", 0, -Math.min(W * 0.24, 220) * 0.62);
+          ctx.font = "800 " + Math.round(Math.min(W * 0.24, 220)) + "px " + DISPLAY;
+          ctx.shadowColor = "#FF6A4D"; ctx.shadowBlur = 30; ctx.fillStyle = "#FF6A4D";
+          ctx.fillText("TOP 6", 0, 0); ctx.shadowBlur = 0;
+          ctx.font = "500 " + Math.round(14 * u + 4) + "px " + MONO; ctx.fillStyle = "#e9eef5";
+          ctx.fillText("came back and made it", 0, Math.min(W * 0.24, 220) * 0.6);
+          ctx.restore(); ctx.textAlign = "left"; ctx.textBaseline = "alphabetic";
+          var flash = clamp(1 - (t - FLIP) / 0.35);
+          if (flash > 0) { ctx.fillStyle = "rgba(255,255,255," + flash + ")"; ctx.fillRect(0, 0, W, H); }
+          ctx.globalAlpha = 1;
+        }
+      };
+    }
+
+    /* ===== VentPal: a surprise hackathon, then chat bubbles and a voice ===== */
+    function ventScene() {
+      var bubbles = [];
+      var LINES = ["rough day...", "I'm tired", "can we talk?", "I'm here.", "take a breath", "you're not alone", "...", "...", "it's okay", "tell me more", "I hear you", "..."];
+      return {
+        total: 7.2, in: 0.4, out: 0.9,
+        init: function () {
+          var u = scaleU();
+          for (var i = 0; i < 20; i++) {
+            var txt = LINES[i % LINES.length];
+            bubbles.push({ x: rnd(W * 0.05, W * 0.8), y: rnd(H * 0.35, H * 1.5), vy: rnd(110, 170), txt: txt,
+                           me: i % 2 === 0, s: (13 + rnd(0, 3)) * u + 3, ph: rnd(0, 6) });
+          }
+        },
+        draw: function (t, dt) {
+          var A = fade(t, this), u = scaleU();
+          var g = ctx.createLinearGradient(0, 0, W, H);
+          g.addColorStop(0, "rgba(29,16,54," + A + ")"); g.addColorStop(1, "rgba(52,20,80," + A + ")");
+          ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+          ctx.globalAlpha = A;
+          if (t < 2) {                                         // the surprise
+            var on = Math.sin(t * 16) > -0.2;
+            var vg = ctx.createRadialGradient(W / 2, H / 2, Math.min(W, H) * 0.3, W / 2, H / 2, Math.max(W, H) * 0.7);
+            vg.addColorStop(0, "rgba(255,60,60,0)"); vg.addColorStop(1, "rgba(255,60,60," + (on ? 0.35 : 0.1) + ")");
+            ctx.fillStyle = vg; ctx.fillRect(0, 0, W, H);
+            var cx = W / 2, cy = H * 0.34, R = 46 * u + 10;
+            ctx.strokeStyle = "#fff"; ctx.lineWidth = 4; ctx.beginPath(); ctx.arc(cx, cy, R, 0, TAU); ctx.stroke();
+            ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(cx + Math.cos(t * 9) * R * 0.8, cy + Math.sin(t * 9) * R * 0.8); ctx.stroke();
+            ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(cx + Math.cos(t * 1.5) * R * 0.5, cy + Math.sin(t * 1.5) * R * 0.5); ctx.stroke();
+            ctx.textAlign = "center"; ctx.textBaseline = "middle";
+            ctx.fillStyle = on ? "#ff5d73" : "#ffd0d6"; ctx.font = "500 " + Math.round(16 * u + 4) + "px " + MONO;
+            ctx.fillText("SURPRISE!", W / 2, H * 0.52);
+            ctx.fillStyle = "#fff"; ctx.font = "800 " + Math.round(Math.min(W * 0.13, 110)) + "px " + DISPLAY;
+            ctx.fillText("HACKATHON", W / 2, H * 0.62);
+            ctx.textAlign = "left"; ctx.textBaseline = "alphabetic";
+          }
+          var B = clamp((t - 1.6) / 0.6);
+          if (B > 0) {
+            for (var i = 0; i < bubbles.length; i++) {
+              var b = bubbles[i]; b.y -= b.vy * dt;
+              if (b.y < -60) { b.y = H + 40; b.x = rnd(W * 0.05, W * 0.8); }
+              ctx.font = "500 " + Math.round(b.s) + "px " + MONO;
+              var typing = b.txt === "...", tw = typing ? b.s * 3 : ctx.measureText(b.txt).width;
+              var bw = tw + b.s * 1.6, bh = b.s * 2.3, y = b.y;
+              var x = Math.max(12, Math.min(W - bw - 16, b.x + Math.sin(t * 1.2 + b.ph) * 10));
+              ctx.globalAlpha = A * B;
+              ctx.fillStyle = b.me ? "#7c5cff" : "rgba(255,255,255,0.92)";
+              roundRect(x, y, bw, bh, bh / 2); ctx.fill();
+              ctx.beginPath();
+              if (b.me) { ctx.moveTo(x + bw - 14, y + bh - 2); ctx.lineTo(x + bw + 4, y + bh + 8); ctx.lineTo(x + bw - 4, y + bh - 10); }
+              else { ctx.moveTo(x + 14, y + bh - 2); ctx.lineTo(x - 4, y + bh + 8); ctx.lineTo(x + 4, y + bh - 10); }
+              ctx.fill();
+              ctx.fillStyle = b.me ? "#fff" : "#2b1450";
+              if (typing) {
+                for (var d = 0; d < 3; d++) {
+                  var jump = Math.max(0, Math.sin(t * 7 - d * 0.7)) * b.s * 0.25;
+                  ctx.beginPath(); ctx.arc(x + b.s * 0.8 + tw * (d + 0.5) / 3, y + bh / 2 - jump, b.s * 0.16, 0, TAU); ctx.fill();
+                }
+              } else { ctx.textBaseline = "middle"; ctx.fillText(b.txt, x + b.s * 0.8, y + bh / 2 + 1); ctx.textBaseline = "alphabetic"; }
+            }
+            // a voice: sound wave bars
+            var bars = 36, bwid = Math.min(10, W / 90), gap = bwid * 0.7, totalW = bars * (bwid + gap), x0 = W / 2 - totalW / 2, base = H - 50 * u;
+            ctx.globalAlpha = A * B;
+            for (var k = 0; k < bars; k++) {
+              var hgt = (12 + Math.abs(Math.sin(t * 6 + k * 0.45) * Math.sin(t * 2.3 + k * 0.17)) * 70) * u;
+              ctx.fillStyle = k % 2 ? "#9bf6ff" : "#ff9ecd";
+              roundRect(x0 + k * (bwid + gap), base - hgt / 2, bwid, hgt, bwid / 2); ctx.fill();
+            }
+          }
+          ctx.globalAlpha = 1;
+        }
+      };
+    }
+
+    /* ===== The contest we didn't want to join: stage fright, plastic, then ice cream ===== */
+    function plasticScene() {
+      var items = [], pops = [];
+      return {
+        total: 7.4, in: 0.4, out: 0.9,
+        init: function () {
+          var u = scaleU();
+          for (var i = 0; i < 28; i++) items.push({ x: rnd(0, W), y: rnd(-H * 0.4, H * 0.85), vy: rnd(55, 95), sway: rnd(0, 6), kind: i % 3 === 0 ? "bag" : "bottle",
+            s: rnd(0.9, 1.3) * u, at: rnd(2.3, 3.6), done: false, scoops: [pick(["#ffb3c6", "#fff1a8", "#b5f2c8", "#c8b6ff", "#ffd6a5"]), pick(["#ffb3c6", "#fff1a8", "#b5f2c8", "#c8b6ff"])], two: Math.random() < 0.5, rot: rnd(-0.4, 0.4) });
+        },
+        draw: function (t, dt) {
+          var A = fade(t, this), u = scaleU();
+          var shake = t < 1.6 ? (1 - t / 1.6) * 7 : 0;
+          ctx.save(); ctx.translate(rnd(-shake, shake), rnd(-shake, shake));
+          var g = ctx.createLinearGradient(0, 0, 0, H);
+          g.addColorStop(0, "rgba(16,108,128," + A + ")"); g.addColorStop(1, "rgba(8,58,74," + A + ")");
+          ctx.fillStyle = g; ctx.fillRect(-20, -20, W + 40, H + 40);
+          ctx.globalAlpha = A;
+          if (t < 2.2) {
+            ctx.textAlign = "center"; ctx.textBaseline = "middle";
+            ctx.fillStyle = "#e6fbff"; ctx.font = "800 " + Math.round(Math.min(W * 0.09, 72)) + "px " + DISPLAY;
+            ctx.fillText("*nervous*", W / 2, H * 0.45);
+            ctx.font = "500 " + Math.round(14 * u + 4) + "px " + MONO; ctx.fillStyle = "#9fe3ee";
+            ctx.fillText("(except Tharshanith)", W / 2, H * 0.45 + Math.min(W * 0.09, 72) * 0.85);
+            ctx.textAlign = "left"; ctx.textBaseline = "alphabetic";
+          }
+          for (var i = 0; i < items.length; i++) {
+            var it = items[i]; it.y += it.vy * dt;
+            if (it.y > H + 80) { it.y = -60; it.x = rnd(0, W); }
+            if (!it.done && t > it.at) {
+              it.done = true;
+              for (var p = 0; p < 10; p++) { var a = rnd(0, TAU); pops.push({ x: it.x, y: it.y, vx: Math.cos(a) * rnd(60, 150), vy: Math.sin(a) * rnd(60, 150), age: 0 }); }
+            }
+            var x = it.x + Math.sin(t * 1.4 + it.sway) * 18, y = it.y, s = it.s;
+            ctx.save(); ctx.translate(x, y); ctx.rotate(it.rot + Math.sin(t * 2 + it.sway) * 0.15); ctx.scale(s, s);
+            if (!it.done && it.kind === "bottle") {
+              ctx.fillStyle = "rgba(190,235,255,0.55)"; roundRect(-12, -30, 24, 60, 8); ctx.fill();
+              ctx.strokeStyle = "rgba(255,255,255,0.7)"; ctx.lineWidth = 1.5; roundRect(-12, -30, 24, 60, 8); ctx.stroke();
+              ctx.fillStyle = "#3d8bfd"; ctx.fillRect(-6, -38, 12, 9);
+              ctx.fillStyle = "rgba(255,255,255,0.75)"; ctx.fillRect(-12, -6, 24, 12);
+            } else if (!it.done) {
+              ctx.fillStyle = "rgba(255,255,255,0.4)"; ctx.strokeStyle = "rgba(255,255,255,0.75)"; ctx.lineWidth = 1.5;
+              ctx.beginPath(); ctx.moveTo(-22, -20);
+              ctx.quadraticCurveTo(-26 + Math.sin(t * 3) * 4, 10, -18, 28); ctx.lineTo(18, 28);
+              ctx.quadraticCurveTo(26 + Math.cos(t * 3) * 4, 10, 22, -20); ctx.closePath(); ctx.fill(); ctx.stroke();
+              ctx.beginPath(); ctx.arc(-11, -20, 8, Math.PI, 0); ctx.stroke(); ctx.beginPath(); ctx.arc(11, -20, 8, Math.PI, 0); ctx.stroke();
+            } else {
+              // a cup of boba milk tea
+              var tea = it.scoops[0] === "#ffb3c6" ? "#f3b7a6" : it.two ? "#d9b48f" : "#e8c9a0";
+              ctx.fillStyle = tea; ctx.beginPath();
+              ctx.moveTo(-17, -22); ctx.lineTo(17, -22); ctx.lineTo(13, 30); ctx.lineTo(-13, 30); ctx.closePath(); ctx.fill();
+              ctx.fillStyle = "rgba(255,255,255,0.35)"; ctx.fillRect(-14, -18, 5, 40);
+              ctx.fillStyle = "#2a1a12";
+              for (var pb = 0; pb < 9; pb++) {
+                ctx.beginPath(); ctx.arc(-9 + (pb % 4) * 6 + (pb > 3 ? 3 : 0), 25 - Math.floor(pb / 4) * 5, 2.8, 0, TAU); ctx.fill();
+              }
+              ctx.strokeStyle = "rgba(255,255,255,0.8)"; ctx.lineWidth = 1.5; ctx.beginPath();
+              ctx.moveTo(-17, -22); ctx.lineTo(-13, 30); ctx.lineTo(13, 30); ctx.lineTo(17, -22); ctx.stroke();
+              ctx.fillStyle = "#ffffff"; ctx.fillRect(-19, -25, 38, 5);
+              ctx.fillStyle = it.scoops[1]; ctx.fillRect(-17, -21, 34, 6);
+              ctx.strokeStyle = "#ff4d6d"; ctx.lineWidth = 5; ctx.lineCap = "round";
+              ctx.beginPath(); ctx.moveTo(4, -22); ctx.lineTo(10, -46); ctx.stroke();
+            }
+            ctx.restore();
+          }
+          ctx.fillStyle = "#fff";
+          for (var q = pops.length - 1; q >= 0; q--) {
+            var pp = pops[q]; pp.age += dt; if (pp.age > 0.5) { pops.splice(q, 1); continue; }
+            pp.x += pp.vx * dt; pp.y += pp.vy * dt; ctx.globalAlpha = A * (1 - pp.age / 0.5);
+            ctx.beginPath(); ctx.arc(pp.x, pp.y, 3, 0, TAU); ctx.fill();
+          }
+          ctx.globalAlpha = A;
+          if (t > 3) {
+            ctx.textAlign = "center"; ctx.fillStyle = "rgba(255,255,255," + clamp((t - 3) / 0.6) + ")";
+            ctx.font = "800 " + Math.round(Math.min(W * 0.07, 54)) + "px " + DISPLAY;
+            ctx.fillText("Mixue boba fixes everything.", W / 2, H * 0.5); ctx.textAlign = "left";
+          }
+          ctx.restore(); ctx.globalAlpha = 1;
+        }
+      };
+    }
+
+    /* --- the player --- */
+    function setup() {
+      cv = document.createElement("canvas"); cv.className = "ocean"; cv.setAttribute("aria-hidden", "true");
+      document.body.appendChild(cv); cv.addEventListener("click", skip);
+      hint = document.createElement("div"); hint.className = "ocean-hint"; hint.textContent = "Tap anywhere to skip";
+      document.body.appendChild(hint);
+      ctx = cv.getContext("2d");
+    }
+    function size() {
+      dpr = Math.min(window.devicePixelRatio || 1, 2); W = window.innerWidth; H = window.innerHeight;
+      cv.width = W * dpr; cv.height = H * dpr; cv.style.width = W + "px"; cv.style.height = H + "px";
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    }
+    function frame(now) {
+      var t = (now - start) / 1000;
+      if (t > scene.total) { stop(); return; }
+      var dt = last ? Math.min(0.05, (now - last) / 1000) : 1 / 60; last = now;
+      ctx.clearRect(0, 0, W, H);
+      ctx.save(); scene.draw(t, dt); ctx.restore();
+      hint.style.opacity = (t > scene.in && t < scene.total - scene.out) ? "1" : "0";
+      raf = requestAnimationFrame(frame);
+    }
+    function stop() {
+      cancelAnimationFrame(raf); running = false; last = 0;
+      cv.classList.remove("on"); hint.style.opacity = "0"; ctx.clearRect(0, 0, W, H);
+      window.removeEventListener("keydown", onKey);
+    }
+    function skip() {
+      var t = (performance.now() - start) / 1000, end = scene.total - scene.out;
+      if (t < end) start = performance.now() - end * 1000;
+    }
+    function onKey(e) { if (e.key === "Escape") skip(); }
+    function play(make) {
+      if (running || reduce.matches) return;
+      if (!cv) setup();
+      size(); scene = make(); scene.init();
+      running = true; cv.classList.add("on"); last = 0;
+      start = performance.now();
+      window.addEventListener("keydown", onKey);
+      raf = requestAnimationFrame(frame);
+    }
+    window.addEventListener("resize", function () { if (running) size(); });
+    var SCENES = {
+      "where-silence-breathes": oceanScene,
+      "how-i-got-into-ai": circuitScene,
+      "fair-hire-post": fairScene,
+      "naic-post": naicScene,
+      "ventpal-post": ventScene,
+      "plastic-post": plasticScene
+    };
+    Object.keys(SCENES).forEach(function (id) {
+      var d = document.querySelector("#" + id + " details");
+      if (d) d.addEventListener("toggle", function () { if (d.open) play(SCENES[id]); });
+    });
+  })();
+
+  /* ---------- Story timeline ---------- */
+  (function () {
+    var tl = document.querySelector(".story-steps");
+    if (!tl) return;
+    Array.prototype.forEach.call(tl.children, function (li, i) { li.style.setProperty("--i", i); });
+    if (!("IntersectionObserver" in window) || reduce.matches) { tl.classList.add("drawn"); return; }
+    var io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (e) {
+        if (e.isIntersecting) { tl.classList.add("drawn"); io.disconnect(); }
+      });
+    }, { threshold: 0.3 });
+    io.observe(tl);
+  })();
 
   /* ---------- Videos ---------- */
   // Shows a thumbnail first; the YouTube player only loads when you press play.
@@ -1476,7 +2435,7 @@ footer {
       answer: "Muhammad Nazhan. Just Nazhan is fine.",
       next: ["Who are you?", "Say my name in binary"] },
     { keys: ["who", "introduce", "yourself", "about you", "nazhan"],
-      answer: "I'm a student at Sunway College in Malaysia. I build AI and computer vision projects, and I'm curious about where tech meets economics and public policy. Outside that, I punch things (boxing, BJJ and Muay Thai).",
+      answer: "I'm a student at Sunway College in Malaysia. I build AI and computer vision projects, and I'm curious about where tech meets economics and public policy. Outside that, I punch things (boxing, BJJ and Muay Thai) and scuba dive.",
       next: ["What's your research?", "Any awards?", "What do you do for fun?"],
       link: ["#about", "More about me"] },
     { keys: ["research", "assistant", "myssp", "video", "youtube", "tampering", "forensics", "experience", "job", "work", "intern", "document", "documents", "fraud"],
@@ -1527,14 +2486,18 @@ footer {
       answer: "I'm in the Canadian International Matriculation Programme (CIMP) at Sunway College, finishing in December 2026.",
       next: ["What do you want to do later?", "Do you like maths?"],
       link: ["#about", "See education"] },
-    { keys: ["career", "future", "plan", "goal", "goals", "economics", "policy", "politics", "business", "interest", "interests", "interested", "later", "dream"],
+    { keys: ["career", "future", "plan", "goal", "goals", "economics", "econs", "why economics", "policy", "politics", "business", "interest", "interests", "interested", "later", "dream"],
       answer: "I want to work where technology meets economics and public policy. AI is my way in: it's going to change how money, work, and governments run, and I want to understand that from the inside.",
       next: ["What's YFS?", "What do you do for fun?"],
       link: ["#interests", "See interests"] },
     { keys: ["sport", "sports", "martial", "boxing", "bjj", "jiu", "muay", "thai", "train", "trains", "trained", "gym", "hobby", "hobbies", "free time", "fun"],
-      answer: "Combat sports: boxing, Brazilian jiu-jitsu and Muay Thai. Great for clearing your head after debugging for six hours.",
-      next: ["Fight me", "Do you volunteer?"],
+      answer: "Combat sports: boxing, Brazilian jiu-jitsu and Muay Thai. Great for clearing your head after debugging for six hours. I also scuba dive.",
+      next: ["Fight me", "Do you scuba dive?"],
       link: ["#interests", "See interests"] },
+    { keys: ["scuba", "dive", "diving", "diver", "underwater", "sea", "swim", "swimming", "beach", "sipadan", "cave", "cavern", "nitrox", "shark", "sharks", "rig"],
+      answer: "Yes! I'm certified in cavern diving and nitrox. I trained at Sipadan while living on a dive rig in the middle of the sea: sharks, barracuda tornadoes, and a flooded cave 13 meters down where my instructor ripped my mask off. Type 'release the birds' to see some fish.",
+      next: ["Release the birds", "What do you do for fun?"],
+      link: ["#where-silence-breathes", "Read the cave story"] },
     { keys: ["language", "languages", "speak", "speaks", "english", "malay", "bahasa"],
       answer: "English and Malay. And Python, if that counts.",
       next: ["Say my name in binary", "Where are you from?"] },
@@ -1562,6 +2525,10 @@ footer {
     { keys: ["ai", "machine learning", "ml", "vision", "computer vision", "deep learning"],
       answer: "Mostly computer vision: classifying images, detecting objects, and segmenting pixels, all in Python and PyTorch.",
       next: ["What's your research?", "How accurate was it?"] },
+    { keys: ["start", "started", "began", "begin", "journey", "story", "how did you get into", "get into", "got into", "into ai", "how did you start", "arduino", "robotics", "robot", "robotic hand", "ev", "electric car", "camp", "gmi", "swift", "covid", "mco", "childhood", "young", "first"],
+      answer: "It started at 12, when my mum sent me to a robotics camp at GMI, where I played with a robotic hand and explored EVs before anyone drove them. Then came an Arduino, my first website in Swift during COVID at 13, Python at 14 (thanks to my sister), and an automatic bin at 15. I only got into AI at 19, at Xplore AI. I almost quit after losing NAIC 2025, but I'm glad I didn't.",
+      next: ["Any awards?", "Why economics?"],
+      link: ["#how-i-got-into-ai", "Read the full story"] },
     { keys: ["writing", "blog", "post", "posts", "write", "article", "diary", "lost", "lose", "losing", "fail", "failure", "redemption", "comeback"],
       answer: "I write about what I build and what I learn: why I'm building Fair Hire, coming back from losing NAIC 2025 to make the Top 6, the surprise hackathon that became VentPal, and the contest we were forced into that brought my team closer. Posts on MYSSP, my anti-fraud idea, and a YFS diary are coming.",
       next: ["Any awards?", "What's VentPal?"],
